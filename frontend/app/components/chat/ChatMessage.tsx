@@ -11,7 +11,7 @@ export default function ChatMessage({message}:ChatMessageProps) {
       bg-blue-600
       px-4
       py-3
-      ${message?.sender !== 'AI' ? 'ml-auto text-white' : 'text-zinc-100 mr-auto'}
+      ${message.sender !== 'AI' ? 'ml-auto text-white' : 'text-zinc-100 mr-auto'}
       `}
     >
       {message?.text || ''}

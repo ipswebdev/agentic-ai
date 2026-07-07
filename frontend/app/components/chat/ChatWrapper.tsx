@@ -7,7 +7,7 @@ import { askQuestion,uploadDocument } from "@/app/services/api";
 import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
 import {AnswerResponse, UserDocument} from "../../types/UserDocument"
-import { Message } from "@/app/types/ChatMessage";
+import { Message, Sender } from "@/app/types/ChatMessage";
 interface ChatWrapperProps {
     documents: UserDocument[];
 }
@@ -19,39 +19,40 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const [showToastNotification,setToastNotification] = useState(false);
     
 
-    const onDocSelect = (d) => {
+    const onDocSelect = (d:UserDocument):void => {
         setToastNotification(false);
         setSelectedDoc(()=>d)
     }
     
-    const onUploadDocument = async (file) => {
+    const onUploadDocument = async (file:File):void => {
         const results = await uploadDocument(file);
         if(results.documentId && results.success){
             router.refresh()
         }
     }
     
-    const toggleToast = ()=>{
+    const toggleToast = ():void=>{
         setToastNotification(false);
     }
 
     const [messageList,setMessageList] = useState<Message[]>([])
-    const onMessageSent = (message) => {
+    const onMessageSent = (message:string):undefined => {
         setToastNotification(false);
         if(!selectedDoc?._id){
-            ('Error! No Doc')
-            setToastNotification(true);;
-            return 
+            setToastNotification(true);
+            return; 
         }
         const trimmedMessage = message.trim()
         getAnswer(message,selectedDoc._id)
-        setMessageList((previous)=>[...previous,{text:trimmedMessage,sender:'user'}])  
+        const newMessage:Message = {text:trimmedMessage,sender:Sender.USER,timestamp:'',id:''}
+        setMessageList((previous)=>[...previous,newMessage])  
     }
     const getAnswer = async (message:string,id:string) : Promise<void> => {
     setLoader(()=>true)
     const result =  await askQuestion(message,id)
         if(result && result.success && result.answer){
-            setMessageList((previous)=>[...previous,{text:result.answer,sender:'AI'}])
+            const newMessageAI:Message = {text:result.answer,sender:Sender.AI,timestamp:'',id:''}
+            setMessageList((previous)=>[...previous,newMessageAI])
         }
         setLoader(()=>false)
     }

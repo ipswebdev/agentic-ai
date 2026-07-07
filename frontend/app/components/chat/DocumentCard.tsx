@@ -11,7 +11,7 @@ interface DocumentCardProps{
 }
 export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
     const router = useRouter()
-    const onProcessDocument = async (id) => {
+    const onProcessDocument = async (id:string):Promise<void> => {
         const result = await processDocument(id);
         console.log(result)
         if(result && result.success && result.documentId === id){

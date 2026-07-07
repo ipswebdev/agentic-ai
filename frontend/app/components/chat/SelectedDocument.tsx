@@ -1,4 +1,9 @@
-export default function SelectedDocument({selectedDoc}) {
+import { UserDocument } from "@/app/types/UserDocument";
+
+interface SelectedDocumentProps{
+    selectedDoc:UserDocument|null
+}
+export default function SelectedDocument({selectedDoc}:SelectedDocumentProps) {
     return (
     <div className="
         h-16

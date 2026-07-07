@@ -1,8 +1,11 @@
 import { useState } from "react";
-
-export default function ChatInput({onMessageSend,loading}) {
+interface ChatInputProps{
+  loading:boolean,
+  onMessageSend:(message:string)=>void
+}
+export default function ChatInput({onMessageSend,loading}:ChatInputProps) {
     const [message,setMessage] = useState('')
-    const handleKeyDown = (ev) => {
+    const handleKeyDown = (ev):void => {
         if(ev && ev.keyCode === 13 && ev.target.value){
             setMessage('')
             onMessageSend(ev.target.value)
