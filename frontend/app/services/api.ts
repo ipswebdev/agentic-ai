@@ -1,12 +1,17 @@
-const expressURL = 'http://localhost:3001'
-const fastApiUrl = 'http://127.0.0.1:8000'
+import { FetchDocumentsResponse,AnswerResponse } from "../types/UserDocument";
 
-export const  fetchUserDocuments = async () => {
-    const results = await fetch(`${expressURL}/documents`,);
-    return results.json();
+import {
+    EXPRESS_API_URL,
+} from "../config/env";
+const expressURL = EXPRESS_API_URL;
+
+export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
+    const response = await fetch(`${expressURL}/documents`,);
+    const data: FetchDocumentsResponse = await response.json()
+    return data;
 }
 
-export const  askQuestion = async (question,docId) => {
+export const  askQuestion = async (question,docId):Promise<AnswerResponse>  =>  {
     const payload = {
         message:question,
         documentId:docId
@@ -18,7 +23,8 @@ export const  askQuestion = async (question,docId) => {
         method:'POST',
         body:JSON.stringify(payload),
     })
-    return results.json();
+    const data :AnswerResponse = await results.json();
+    return data;
 }
 
 export const  processDocument = async (docId:string) => {

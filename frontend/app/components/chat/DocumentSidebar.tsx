@@ -1,8 +1,14 @@
+import { UserDocument } from "@/app/types/UserDocument";
 import DocumentList from "./DocumentList";
 import UploadForm from "./UploadForm";
 
+interface DocumentSidebarProps{
+  documents:UserDocument[],
+  onDocSelect:(d:UserDocument)=>void,
+  onUploadDocument:(file:File)=>void
+}
 
-export default function DocumentSidebar({documents,onDocSelect,onUploadDocument}) {
+export default function DocumentSidebar({documents,onDocSelect,onUploadDocument}:DocumentSidebarProps) {
   return (
     <div className="
       border-r

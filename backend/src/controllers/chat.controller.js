@@ -5,8 +5,12 @@ const sendMessage = async  (req, res) =>  {
   const message = processMessage(req.body);
   const {documentId} = req.body
   const data = await getAIAnswer(message,documentId);
-  const response = await data.data.answer
-  return res.json({answer:response,success:data.success})
+  const answer = await data.answer
+  if(answer && data.success){
+    return res.status(200).json({answer:answer,success:data.success})
+  }
+  return res.status(400).json({answer:answer,success:data.success})
+  
 }
 
 const getChatHistory = (req,res) => {

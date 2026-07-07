@@ -1,3 +1,6 @@
+const {
+    FASTAPI_URL,
+} = require("../config/env");
 const chatHistory = [
   {
     id: 1,
@@ -18,7 +21,7 @@ const processMessage = ({
 
 const getAIAnswer = async (message,documentId) => {
   const uri = 'generate-answer'
-  const baseUrl = `http://localhost:8000/${uri}`
+  const baseUrl = `${FASTAPI_URL}/${uri}`
   const payload = JSON.stringify({
     message: message,
     "documentId":documentId 
@@ -36,14 +39,22 @@ const getAIAnswer = async (message,documentId) => {
     );
     
     const data = await aiMessage.json()
-    return  {
+    if(data && data.answer && data.matches && data.matches.length){
+      return  {
       success:true, 
-      data:data
+      answer:data.answer
+      }
+    }else{
+      return  {
+      success:false, 
+      answer:'Couldnt get AI Response'
     }
+    }
+    
   }catch(error){
     return {
       success:false,
-      message:'Couldnt get AI Response'
+      answer:'Couldnt get AI Response'
     } 
   }
   

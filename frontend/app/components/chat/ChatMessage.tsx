@@ -1,4 +1,9 @@
-export default function ChatMessage({message}) {
+import { Message } from "@/app/types/ChatMessage";
+
+interface ChatMessageProps{
+  message: Message
+}
+export default function ChatMessage({message}:ChatMessageProps) {
   return (
     <div className={`
       max-w-[70%]

@@ -4,8 +4,12 @@
 import { useRouter } from "next/navigation";
 import Button from "../common/Button";
 import { processDocument } from "@/app/services/api";
-
-export default function DocumentCard({file,onDocSelect}) {
+import { UserDocument } from "@/app/types/UserDocument";
+interface DocumentCardProps{
+    file:UserDocument,
+    onDocSelect:(d:UserDocument)=>void,
+}
+export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
     const router = useRouter()
     const onProcessDocument = async (id) => {
         const result = await processDocument(id);

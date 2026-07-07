@@ -1,6 +1,8 @@
 const { createDocument,fetchDocument, updateDocumentStatusbyId, fetchAllDocuments } = require("../repositories/document.repository");
 
-const fastAPIUrl = `http://127.0.0.1:8000`
+const {
+    FASTAPI_URL
+} = require("../config/env");
 
 const extractFileDetails =  (file) => {
   const fileDetails = {
@@ -17,7 +19,7 @@ const processDocumentData = async (id,filePath) => {
     documentId :id,
     filePath : filePath
   }
-  const res = await fetch(`${fastAPIUrl}/process-document`,{
+  const res = await fetch(`${FASTAPI_URL}/process-document`,{
     method:'POST',
     body:JSON.stringify(payload),
     headers: {

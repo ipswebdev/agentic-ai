@@ -167,12 +167,14 @@ def  process_document(req: DocumentMetadata):
 
 @app.post("/generate-answer")
 def generate_answer(req: ChatRequest):
+    
     questionEmbedding = generate_embedding(req.message)
     docEmbeddings = getDocEmbeddings(req.documentId)
     qValues = questionEmbedding.embeddings[0].values
     cosineMatches = []
+    # print('gen Ans',req.message,docEmbeddings,questionEmbedding)
     for doc in  docEmbeddings:
-        print(doc["chunkId"])
+        # print(doc["chunkId"])
         cosValue = cosineSimilarity(qValues,doc["embedding"])
         match = {
             "text":doc["text"],

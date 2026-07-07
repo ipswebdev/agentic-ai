@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
+import { Message } from "@/app/types/ChatMessage";
 
-export default function ChatWindow({messages,onMessageSend,loading,selectedDocument}) {
+interface ChatWindowProps{
+  messages: Message[],
+  onMessageSend:(message:string)=>void,
+  loading:boolean,
+  selectedDocument:string|undefined
+}
+
+export default function ChatWindow({messages,onMessageSend,loading,selectedDocument}:ChatWindowProps) {
   const chatContainer = useRef<HTMLDivElement | null>(null)
   const messageList = messages.map((m,k)=><ChatMessage key={k} message={m}></ChatMessage>)
   useEffect(()=>{
     const chatContainerElement = chatContainer.current;
     if (!chatContainerElement) return;
-    chatContainerElement.scrollTo({top:chatContainer.current.scrollHeight,behavior:'smooth'})
+    chatContainerElement.scrollTo({top:chatContainer?.current?.scrollHeight,behavior:'smooth'})
   },[messages])
   return (
     <div className="

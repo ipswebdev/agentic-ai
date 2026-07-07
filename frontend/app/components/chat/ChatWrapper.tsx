@@ -6,10 +6,15 @@ import SelectedDocument from "./SelectedDocument";
 import { askQuestion,uploadDocument } from "@/app/services/api";
 import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
+import {AnswerResponse, UserDocument} from "../../types/UserDocument"
+import { Message } from "@/app/types/ChatMessage";
+interface ChatWrapperProps {
+    documents: UserDocument[];
+}
 
-export default function ChatWrapper({documents}) {
+export default function ChatWrapper({documents}:ChatWrapperProps) {
     const router = useRouter();
-    const [selectedDoc , setSelectedDoc] = useState({})
+    const [selectedDoc , setSelectedDoc] = useState<UserDocument|null>(null)
     const [loading , setLoader] = useState(false)
     const [showToastNotification,setToastNotification] = useState(false);
     
@@ -23,7 +28,6 @@ export default function ChatWrapper({documents}) {
         const results = await uploadDocument(file);
         if(results.documentId && results.success){
             router.refresh()
-
         }
     }
     
@@ -31,7 +35,7 @@ export default function ChatWrapper({documents}) {
         setToastNotification(false);
     }
 
-    const [messageList,setMessageList] = useState([])
+    const [messageList,setMessageList] = useState<Message[]>([])
     const onMessageSent = (message) => {
         setToastNotification(false);
         if(!selectedDoc?._id){
@@ -43,10 +47,10 @@ export default function ChatWrapper({documents}) {
         getAnswer(message,selectedDoc._id)
         setMessageList((previous)=>[...previous,{text:trimmedMessage,sender:'user'}])  
     }
-    const getAnswer = async (message,id)=> {
+    const getAnswer = async (message:string,id:string) : Promise<void> => {
     setLoader(()=>true)
     const result =  await askQuestion(message,id)
-        if(result && result.answer){
+        if(result && result.success && result.answer){
             setMessageList((previous)=>[...previous,{text:result.answer,sender:'AI'}])
         }
         setLoader(()=>false)
@@ -64,7 +68,7 @@ export default function ChatWrapper({documents}) {
         <SelectedDocument selectedDoc={selectedDoc}></SelectedDocument>
         <div className="flex flex-1 overflow-hidden">
             <DocumentSidebar onUploadDocument={(f)=>onUploadDocument(f)} onDocSelect={onDocSelect} documents={documents}></DocumentSidebar>
-            <ChatWindow selectedDocument={selectedDoc.fileName} loading={loading} messages={messageList} onMessageSend={onMessageSent}></ChatWindow>
+            <ChatWindow selectedDocument={selectedDoc?.fileName} loading={loading} messages={messageList} onMessageSend={onMessageSent}></ChatWindow>
         </div>
     </div>
   );

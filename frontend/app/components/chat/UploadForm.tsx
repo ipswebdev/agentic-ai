@@ -3,7 +3,11 @@
 import { useRef, useState } from "react";
 import Button from "../common/Button";
 
-export default function UploadForm({ onUploadDocument }) {
+interface UploadFormProps{
+    onUploadDocument:(file:File)=>void
+}
+
+export default function UploadForm({ onUploadDocument }:UploadFormProps) {
     const [showUploadDialog, setUploadDialog] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | null>(null);

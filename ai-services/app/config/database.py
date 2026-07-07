@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 
-uri = "mongodb+srv://sawantpranay97_db_user:XvBEnApPHTGvfeEd@cluster0.ho2j3pj.mongodb.net/agentic-ai?retryWrites=true&w=majority&appName=Cluster0"
+uri = ''
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client["agentic-ai"]
 def connectToDB():

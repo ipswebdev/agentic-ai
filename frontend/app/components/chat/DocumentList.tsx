@@ -1,6 +1,11 @@
+import { UserDocument } from "@/app/types/UserDocument";
 import DocumentCard from "./DocumentCard";
 
-export default function DocumentList({documents,onDocSelect}) {
+interface DocumentListProps{
+    documents:UserDocument[],
+    onDocSelect:(d:UserDocument)=>void,
+}
+export default function DocumentList({documents,onDocSelect}:DocumentListProps) {
     const fetchedDocs = documents.map((d,i)=> {
     return <DocumentCard onDocSelect={onDocSelect} key={i} file={d}></DocumentCard>
     })

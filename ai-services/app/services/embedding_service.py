@@ -1,6 +1,5 @@
 from google import genai
-from app.env import GEMINI_API_KEY
-
+from app.config.settings import GEMINI_API_KEY
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 def generate_embedding(text):
