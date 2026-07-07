@@ -6,7 +6,7 @@ import SelectedDocument from "./SelectedDocument";
 import { askQuestion,uploadDocument } from "@/app/services/api";
 import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
-import {AnswerResponse, UserDocument} from "../../types/UserDocument"
+import  { UserDocument } from "../../types/UserDocument"
 import { Message, Sender } from "@/app/types/ChatMessage";
 interface ChatWrapperProps {
     documents: UserDocument[];
@@ -24,7 +24,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         setSelectedDoc(()=>d)
     }
     
-    const onUploadDocument = async (file:File):void => {
+    const onUploadDocument = async (file:File):Promise<void> => {
         const results = await uploadDocument(file);
         if(results.documentId && results.success){
             router.refresh()
@@ -38,12 +38,12 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const [messageList,setMessageList] = useState<Message[]>([])
     const onMessageSent = (message:string):undefined => {
         setToastNotification(false);
-        if(!selectedDoc?._id){
+        if(!selectedDoc?.id){
             setToastNotification(true);
             return; 
         }
         const trimmedMessage = message.trim()
-        getAnswer(message,selectedDoc._id)
+        getAnswer(message,selectedDoc.id)
         const newMessage:Message = {text:trimmedMessage,sender:Sender.USER,timestamp:'',id:''}
         setMessageList((previous)=>[...previous,newMessage])  
     }

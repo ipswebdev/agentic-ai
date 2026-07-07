@@ -10,8 +10,19 @@ const uploadDocument = async  (req, res) =>  {
 const getDocument = async (req,res) => {
   const {id} = {...req.params};
   const userDoc = await fetchDocumentById(id);
+  const d = userDoc.document
     res.json({
-    ...userDoc,
+    success:userDoc.status,
+    document:{
+      id:d._id,
+      fileName:d.fileName,
+      filePath: d.filePath,
+      mimeType: d.mimeType,
+      size: d.size,
+      status: d.status,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt
+    }
   });
 }
 
@@ -42,8 +53,22 @@ const processDocument = async (req,res) => {
 
 const getDocuments = async (req,res) => {
   const userDocs = await fetchDocuments();
+  const docs = userDocs.documents.map(d=>{
+    return{
+      id:d._id,
+      fileName:d.fileName,
+      filePath: d.filePath,
+      mimeType: d.mimeType,
+      size: d.size,
+      status: d.status,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt
+    }
+  })
+
     res.json({
-    ...userDocs,
+    ...userDocs.status,
+    documents:docs
   });
 }
 
@@ -51,7 +76,20 @@ const changeDocumentStatus = async (req,res) => {
   const {id} = {...req.params};
   const status = req.body.status;
   const userDoc = await updateDocumentStatus(id,status);
-  return res.json(userDoc)
+  const d = userDoc.document;
+  return res.json({
+    success:userDoc.success,
+    document:{
+      id:d._id,
+      fileName:d.fileName,
+      filePath: d.filePath,
+      mimeType: d.mimeType,
+      size: d.size,
+      status: d.status,
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt
+    }
+  })
 }
 
 module.exports = {

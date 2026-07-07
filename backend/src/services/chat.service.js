@@ -1,5 +1,5 @@
 const {
-    FASTAPI_URL,
+    FAST_API_URL,
 } = require("../config/env");
 const chatHistory = [
   {
@@ -21,11 +21,12 @@ const processMessage = ({
 
 const getAIAnswer = async (message,documentId) => {
   const uri = 'generate-answer'
-  const baseUrl = `${FASTAPI_URL}/${uri}`
+  const baseUrl = `${FAST_API_URL}/${uri}`
   const payload = JSON.stringify({
     message: message,
     "documentId":documentId 
   })
+  console.log('getAIAnswer',baseUrl,payload)
   try{
     const aiMessage = await fetch(
       baseUrl,

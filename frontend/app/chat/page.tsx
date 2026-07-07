@@ -5,6 +5,7 @@ import ChatWrapper from "../components/chat/ChatWrapper";
 export default async function Chat() {
   const res =  await fetchUserDocuments();
   const fetchedDocs = res['documents']?.length ?  res['documents'].map(d => d) : [];
+  console.log(fetchedDocs)
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100">
       <Header></Header>

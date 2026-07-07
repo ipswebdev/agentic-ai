@@ -40,7 +40,7 @@ export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
             return (
                 <Button
                     label="Process Document"
-                    onUserClick={() => onProcessDocument(file._id)}
+                    onUserClick={() => onProcessDocument(file.id)}
                 />
             );
 

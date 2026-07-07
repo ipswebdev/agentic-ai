@@ -6,7 +6,7 @@ export enum DocumentStatus{
 }
 
 export interface UserDocument  {
-    _id: string,
+    id: string,
     fileName:string,
     filePath: string,
     status: DocumentStatus,
