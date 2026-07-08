@@ -22,14 +22,20 @@ const processDocument = async (req,res) => {
   if(userDoc.success){
     if(userDoc.document.status === 'READY'){
       return success(res,{
-          success:userDoc.success,
           "documentId": userDoc.document.id,
       },'Document already processsed!',200)
     }else{
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
-      return success(res,{
-        ...processedDoc,
-      },'Document processsed!',200)
+      if(processedDoc?.data?.documentId && processedDoc?.data?.success){
+        return success(res,{
+                documentId:processedDoc.data.documentId
+                },
+                'Document processsed!',200
+              )
+      }else{
+        return failure(res,processedDoc?.message,500)
+      }
+      
     }
   }else{
     return failure(res,'No such document exists',404)

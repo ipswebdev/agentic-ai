@@ -1,6 +1,7 @@
 
 from app.config.database import db
 from app.models.document_chunk import DocumentChunk
+
 def storeChunk(chunk:DocumentChunk):
     documentChunksCollection = db['documentchunks'];
     chunkData = chunk.model_dump()
@@ -15,6 +16,7 @@ def fetchChunkById(documentId:str):
     return list(documentChunks)
 
 def updateChunkStatus(documentId:str,status):
+
     documentChunksCollection = db['documentchunks'];
     documentChunksCollection.update_many(
         {

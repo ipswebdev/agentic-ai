@@ -1,5 +1,8 @@
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pypdf import PdfReader
 from pathlib import Path
@@ -42,8 +45,9 @@ class DocumentChunk(BaseModel):
     documentId: str
     chunkNumber: int
     chunk: str
-
 class DocumentProcessingException(Exception):
+    pass
+class DocumentStatusUpdateException(DocumentProcessingException):
     pass
 class ChunkStorageException(DocumentProcessingException):
     pass
@@ -79,8 +83,7 @@ def generateChunks(req):
         raise ChunkGenerationException("Chunk Creation Failed!") from err
         
 def storeChunks(createdChunks):
-    try:
-        
+    try:  
         storedChunks = []
         for chunk in createdChunks:
             storedChunk = storeChunk(chunk)
@@ -97,11 +100,14 @@ def embeddingsComplete(existingChunks,existingEmbeddings):
     if(len(existingChunks) > 0 and len(existingChunks) == len(existingEmbeddings)):
         return True
     return False
-def markDocReady(docId):
-    updateDocumentStatus(docId,"READY");
+def markDocStatus(docId,status):
+    try:
+        updateDocumentStatus(docId,status);
+    except Exception as err:
+        raise DocumentStatusUpdateException('Mongo Error') from err
 @app.post("/process-document")
 def  process_document(req: DocumentMetadata):
-    try:   
+    try: 
         existingChunks = fetchChunkById(req.documentId);
         docEmbeddings = getDocEmbeddings(req.documentId)
         chunksLength = 0;
@@ -109,61 +115,36 @@ def  process_document(req: DocumentMetadata):
         print("Embeddings complete",embeddingsComplete(existingChunks,docEmbeddings))
         if hasChunks(existingChunks) :   
             if(not embeddingsComplete(existingChunks,docEmbeddings)):
-                updateDocumentStatus(req.documentId, "PROCESSING")
+                markDocStatus(req.documentId, "PROCESSING")
                 generateAndStoreEmbeddings(existingChunks,req.documentId)
             chunksLength = len(existingChunks)
         else:
-            updateDocumentStatus(
-              req.documentId,
-                "PROCESSING"
-            );
+            markDocStatus(req.documentId, "PROCESSING")
             createdChunks = generateChunks(req)
             storedChunks = storeChunks(createdChunks)
             chunksLength = len(storedChunks)
             generateAndStoreEmbeddings(storedChunks,req.documentId)
-        markDocReady(req.documentId)    
-        return {
-            "documentId": req.documentId,
-            "success":True,
-            "chunks":chunksLength
-        }
+        markDocStatus(req.documentId,"READY")    
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "documentId": req.documentId,
+                "chunks": chunksLength
+            }
+        )
 
     except DocumentProcessingException as err:
-        print(err)
-
-        updateDocumentStatus(
-            req.documentId,
-            "FAILED"
+        print('DocumentProcessingException',err)
+        try: 
+            markDocStatus( req.documentId,"FAILED")
+        except DocumentStatusUpdateException as docErr:
+            print('DocumentStatusUpdateException',docErr)   
+        return JSONResponse(
+            status_code=500, 
+            content={"message":str(err), "success":False}
         )
-        raise    
-    # except PDFExtractionException as err:
-    #     print(err)
-        
-    #     raise
-    # except ChunkGenerationException as err:
-    #     print(err)
-        
-    #     raise
-
-    # except ChunkStorageException as err:
-    #     print(err)
-
-    #     raise 
-    # except EmbeddingGenerationException as err:
-    #     print(err)
-        
-    #     raise
-    # except EmbeddingStorageException as err:
-    #     print(err)
-        
-    #     raise
-    # except Exception as err:
-    #     print(err);
-        
-    #     updateDocumentStatus(
-    #         req.documentId,
-    #         "FAILED"
-    #     )
+          
 
 @app.post("/generate-answer")
 def generate_answer(req: ChatRequest):
@@ -225,32 +206,37 @@ def getDocEmbeddings(docId):
     return fetchEmbeddingsByDocId(docId);
 
 def generateEmbeddings(chunks):
-    generatedEmbeddings = []
-    for storedChunk in chunks:
-        generatedEmbedding = generate_embedding(storedChunk["text"])
-        documentEmbedding = DocumentEmbedding(
-            chunkId = str(storedChunk["_id"]),
-            documentId = storedChunk["documentId"],
-            text= storedChunk["text"],
-            embedding= generatedEmbedding.embeddings[0].values
-        )
-        generatedEmbeddings.append(documentEmbedding.model_dump())
-    return generatedEmbeddings 
+    try:
+        generatedEmbeddings = []
+        for storedChunk in chunks:
+            generatedEmbedding = generate_embedding(storedChunk["text"])
+            documentEmbedding = DocumentEmbedding(
+                chunkId = str(storedChunk["_id"]),
+                documentId = storedChunk["documentId"],
+                text= storedChunk["text"],
+                embedding= generatedEmbedding.embeddings[0].values
+            )
+            generatedEmbeddings.append(documentEmbedding.model_dump())
+        return generatedEmbeddings 
+    except Exception as err:
+        raise EmbeddingGenerationException('Embedding Generation failed') from err
+
 
 def storeEmbeddings(embeddings):
-    storeDocEmbeddings(embeddings)
+    try:
+        storeDocEmbeddings(embeddings);
+    except Exception as err:
+        raise EmbeddingStorageException('Embedding Storage Failed') from err
 
 def generateAndStoreEmbeddings(chunks,documentId):
-    try:
-        generatedEmbeddings = generateEmbeddings(chunks)
-        storeEmbeddings(generatedEmbeddings)
-        updateChunkStatus(
-            documentId,
-            "EMBEDDED"
-        )
-    except Exception as err:
-        raise EmbeddingGenerationException('Embedding Generation failed') from err;
-
+    
+    generatedEmbeddings = generateEmbeddings(chunks)
+    storeEmbeddings(generatedEmbeddings)
+    updateChunkStatus(
+        documentId,
+        "EMBEDDED"
+    )
+    
 def buildChatContext(topMatches:list):
     context = '';
     for index, match in enumerate(topMatches):
