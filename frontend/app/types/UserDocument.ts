@@ -22,6 +22,9 @@ export interface FetchDocumentsResponse {
 }
 
 export interface AnswerResponse {
-    answer: string;
-    success:boolean
+    data:{
+        answer: string;
+    };
+    message:string;
+    success:boolean;
 }

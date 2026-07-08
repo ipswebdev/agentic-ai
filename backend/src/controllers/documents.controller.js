@@ -23,7 +23,7 @@ const processDocument = async (req,res) => {
     if(userDoc.document.status === 'READY'){
       return success(res,{
           success:userDoc.success,
-          "documentId": userDoc.document._id,
+          "documentId": userDoc.document.id,
       },'Document already processsed!',200)
     }else{
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)

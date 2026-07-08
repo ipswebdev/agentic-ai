@@ -27,7 +27,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const onProcessDocument = async (id:string):Promise<void> => {
         const result = await processDocument(id);
         console.log(result)
-        if(result && result.success && result.documentId === id){
+        if(result && result.success && result.data.documentId === id){
             router.refresh()
         }
     }
@@ -35,7 +35,8 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         try{
             const results = await uploadDocument(file);
             if(results?.data?.documentId && results.success){
-                onProcessDocument(results.documentId)
+                router.refresh();
+                onProcessDocument(results.data?.documentId)
             }
         }
         catch(err){
@@ -66,8 +67,8 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const getAnswer = async (message:string,id:string) : Promise<void> => {
     setLoader(()=>true)
     const result =  await askQuestion(message,id)
-        if(result && result.success && result.answer){
-            const newMessageAI:Message = {text:result.answer,sender:Sender.AI,timestamp:'',id:''}
+        if(result && result.success && result.data.answer){
+            const newMessageAI:Message = {text:result.data.answer,sender:Sender.AI,timestamp:'',id:''}
             setMessageList((previous)=>[...previous,newMessageAI])
         }
         setLoader(()=>false)

@@ -32,19 +32,29 @@ const processDocumentData = async (id,filePath) => {
 
 const processDocumentUpload = async ({
    file,
-}) => {
-  const uploadedFile = extractFileDetails(file)
-  const createdDocument = await createDocument(uploadedFile); 
-  console.log(createdDocument)
-  const res = {
-  documentId: createdDocument._id,
-  filePath: createdDocument.filePath
-}
+    }) => {
+      const uploadedFile = extractFileDetails(file)
+      const createdDocument = await createDocument(uploadedFile); 
+    
+      const res = {
+        documentId: createdDocument._id.toString(),
+        filePath: createdDocument.filePath
+      }
     return res;
 }
 
 const fetchDocumentById = async (id) => {
     const doc = await fetchDocument(id);
+    const docModification = {
+      id: doc._id,
+      fileName: doc.fileName,
+      filePath: doc.filePath,
+      mimeType: doc.mimeType,
+      size: doc.size,
+      status: doc.status,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    }
      if (!doc) {
       return {
           success: false,
@@ -53,7 +63,7 @@ const fetchDocumentById = async (id) => {
     }
     return {
       success: true,
-      document: doc
+      document: docModification
     };
 }
 

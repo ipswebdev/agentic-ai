@@ -1,6 +1,6 @@
 const { json } = require("body-parser");
 const { chatHistory,processMessage, getAIAnswer } = require("../services/chat.service");
-
+const {success,failure} = require('../utils/response.utils')
 
 const sendMessage = async  (req, res) =>  {
   const message = processMessage(req.body);
@@ -9,7 +9,6 @@ const sendMessage = async  (req, res) =>  {
   const answer = await data.answer
   const AnswerData = {
     answer:answer,
-    matches:data.matches
   }
   if(answer && data.success){
     return success(res,AnswerData,"Answer generated Successfully!",200)
