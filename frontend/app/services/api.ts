@@ -3,11 +3,14 @@ import { FetchDocumentsResponse,AnswerResponse } from "../types/UserDocument";
 import {
     EXPRESS_API_URL,
 } from "../config/env";
+
 const expressURL = EXPRESS_API_URL;
 
 export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
     const response = await fetch(`${expressURL}/documents`,);
     const data: FetchDocumentsResponse = await response.json()
+    console.log('fetchuserdocuments',`${expressURL}/documents`,data)
+    
     return data;
 }
 
@@ -28,7 +31,9 @@ export const  askQuestion = async (question,docId):Promise<AnswerResponse>  =>  
 }
 
 export const  processDocument = async (docId:string) => {
-    const results = await fetch(`${expressURL}/documents/${docId}/process-document`,{
+    const url = `${expressURL}/documents/${docId}/process-document`
+    console.log(docId,expressURL)
+    const results = await fetch(url,{
         headers: {
             "Content-Type": "application/json"
         },

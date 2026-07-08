@@ -15,7 +15,10 @@ export interface UserDocument  {
 }
 export interface FetchDocumentsResponse {
     success: boolean;
-    documents: UserDocument[];
+    data:{
+        documents: UserDocument[]
+    }
+
 }
 
 export interface AnswerResponse {

@@ -1,6 +1,7 @@
 const {
     FAST_API_URL,
 } = require("../config/env");
+const {success,failure} = require('../utils/response.utils')
 const chatHistory = [
   {
     id: 1,
@@ -26,7 +27,6 @@ const getAIAnswer = async (message,documentId) => {
     message: message,
     "documentId":documentId 
   })
-  console.log('getAIAnswer',baseUrl,payload)
   try{
     const aiMessage = await fetch(
       baseUrl,

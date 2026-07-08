@@ -3,7 +3,7 @@ import { useState } from "react";
 import ChatWindow from "./ChatWindow";
 import DocumentSidebar from "./DocumentSidebar";
 import SelectedDocument from "./SelectedDocument";
-import { askQuestion,uploadDocument } from "@/app/services/api";
+import { askQuestion,processDocument,uploadDocument } from "@/app/services/api";
 import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
 import  { UserDocument } from "../../types/UserDocument"
@@ -17,18 +17,33 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const [selectedDoc , setSelectedDoc] = useState<UserDocument|null>(null)
     const [loading , setLoader] = useState(false)
     const [showToastNotification,setToastNotification] = useState(false);
-    
+    const [toastLabel,setToastLabel] = useState('')
 
     const onDocSelect = (d:UserDocument):void => {
         setToastNotification(false);
         setSelectedDoc(()=>d)
     }
     
-    const onUploadDocument = async (file:File):Promise<void> => {
-        const results = await uploadDocument(file);
-        if(results.documentId && results.success){
+    const onProcessDocument = async (id:string):Promise<void> => {
+        const result = await processDocument(id);
+        console.log(result)
+        if(result && result.success && result.documentId === id){
             router.refresh()
         }
+    }
+    const onUploadDocument = async (file:File):Promise<void> => {
+        try{
+            const results = await uploadDocument(file);
+            if(results?.data?.documentId && results.success){
+                onProcessDocument(results.documentId)
+            }
+        }
+        catch(err){
+            console.log(err);
+            setToastLabel("Error: Unable to Upload the document")
+            setToastNotification(true);
+        }
+        
     }
     
     const toggleToast = ():void=>{
@@ -36,9 +51,10 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     }
 
     const [messageList,setMessageList] = useState<Message[]>([])
-    const onMessageSent = (message:string):undefined => {
+    const onMessageSent = (message:string):void => {
         setToastNotification(false);
         if(!selectedDoc?.id){
+            setToastLabel("Please select a document first.")
             setToastNotification(true);
             return; 
         }
@@ -60,7 +76,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     <div className="flex flex-col h-[calc(100vh-64px)]">
         { showToastNotification && (
                 <Toast
-                    message={"Please select a document first."}
+                    message={toastLabel}
                     status={"ERROR"}
                     onClose={()=>toggleToast()}
                 />

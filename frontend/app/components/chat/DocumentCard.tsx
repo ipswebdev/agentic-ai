@@ -36,6 +36,11 @@ export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
             );
 
         case "UPLOADED":
+            return (
+                <span className="rounded-full bg-yellow-900 px-2 py-1 text-xs font-medium text-yellow-300">
+                    🟡 Processing
+                </span>
+            );
         case "FAILED":
             return (
                 <Button

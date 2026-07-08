@@ -1,29 +1,18 @@
 const { json } = require("body-parser");
 const { fetchDocument, processDocumentUpload, extractFileDetails,fetchDocumentById,updateDocumentStatus, fetchDocuments,processDocumentData } = require("../services/documents.service");
+const {success,failure} = require("../utils/response.utils")
 
 const uploadDocument = async  (req, res) =>  {
   console.log(req.file)
   const data = await processDocumentUpload({file:req.file});
-  return res.json(data)
+  return success(res,data,'Upload Successful!',200)
 }
 
 const getDocument = async (req,res) => {
   const {id} = {...req.params};
   const userDoc = await fetchDocumentById(id);
   const d = userDoc.document
-    res.json({
-    success:userDoc.status,
-    document:{
-      id:d._id,
-      fileName:d.fileName,
-      filePath: d.filePath,
-      mimeType: d.mimeType,
-      size: d.size,
-      status: d.status,
-      createdAt: d.createdAt,
-      updatedAt: d.updatedAt
-    }
-  });
+  return success(res,d,'Successfully fetched document',200)
 }
 
 const processDocument = async (req,res) => {
@@ -32,28 +21,24 @@ const processDocument = async (req,res) => {
   
   if(userDoc.success){
     if(userDoc.document.status === 'READY'){
-      res.status(200).json({
-        success:userDoc.success,
-        "documentId": userDoc.document._id,
-    });
+      return success(res,{
+          success:userDoc.success,
+          "documentId": userDoc.document._id,
+      },'Document already processsed!',200)
     }else{
-      console.log('processDoc proccessingCall',userDoc)
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
-       res.status(200).json({
-      ...processedDoc,
-    });
+      return success(res,{
+        ...processedDoc,
+      },'Document processsed!',200)
     }
   }else{
-    res.status(400).json({
-      success:false,
-      message:'No Such Document Exists'
-    });
+    return failure(res,'No such document exists',404)
   }
 }
 
 const getDocuments = async (req,res) => {
   const userDocs = await fetchDocuments();
-  const docs = userDocs.documents.map(d=>{
+  const documents = userDocs.documents.map(d=>{
     return{
       id:d._id,
       fileName:d.fileName,
@@ -65,11 +50,9 @@ const getDocuments = async (req,res) => {
       updatedAt: d.updatedAt
     }
   })
-
-    res.json({
-    ...userDocs.status,
-    documents:docs
-  });
+  return success(res,{
+    "documents":documents
+  },'Fetched Documents successfully',200);
 }
 
 const changeDocumentStatus = async (req,res) => {
@@ -77,9 +60,7 @@ const changeDocumentStatus = async (req,res) => {
   const status = req.body.status;
   const userDoc = await updateDocumentStatus(id,status);
   const d = userDoc.document;
-  return res.json({
-    success:userDoc.success,
-    document:{
+  return success(res,{document:{
       id:d._id,
       fileName:d.fileName,
       filePath: d.filePath,
@@ -88,8 +69,9 @@ const changeDocumentStatus = async (req,res) => {
       status: d.status,
       createdAt: d.createdAt,
       updatedAt: d.updatedAt
-    }
-  })
+    }},
+    'Updated Document Status',200
+  )
 }
 
 module.exports = {

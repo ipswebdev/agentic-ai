@@ -1,7 +1,7 @@
 const { createDocument,fetchDocument, updateDocumentStatusbyId, fetchAllDocuments } = require("../repositories/document.repository");
 
 const {
-    FASTAPI_URL
+    FAST_API_URL
 } = require("../config/env");
 
 const extractFileDetails =  (file) => {
@@ -19,7 +19,7 @@ const processDocumentData = async (id,filePath) => {
     documentId :id,
     filePath : filePath
   }
-  const res = await fetch(`${FASTAPI_URL}/process-document`,{
+  const res = await fetch(`${FAST_API_URL}/process-document`,{
     method:'POST',
     body:JSON.stringify(payload),
     headers: {
@@ -37,8 +37,6 @@ const processDocumentUpload = async ({
   const createdDocument = await createDocument(uploadedFile); 
   console.log(createdDocument)
   const res = {
-  success: true,
-  message: "Upload successful",
   documentId: createdDocument._id,
   filePath: createdDocument.filePath
 }
@@ -61,9 +59,11 @@ const fetchDocumentById = async (id) => {
 
 const fetchDocuments = async () => {
     const docs = await fetchAllDocuments();
+    console.log('fetch!',docs)
      if (!docs?.length) {
       return {
-          success: false,
+          success: true,
+          documents:[],
           message: 'No Documents not found'
         };
     }
