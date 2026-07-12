@@ -27,16 +27,27 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const onProcessDocument = async (id:string):Promise<void> => {
         const result = await processDocument(id);
         console.log(result)
+        setToastNotification(false);
         if(result && result.success && result.data.documentId === id){
+            setToastLabel("Document Processing Done!")
+            setToastNotification(true);
             router.refresh()
+        }else{
+            setToastLabel("Error Processing the Document!Please try again later....")
+            setToastNotification(true);
         }
     }
     const onUploadDocument = async (file:File):Promise<void> => {
         try{
             const results = await uploadDocument(file);
             if(results?.data?.documentId && results.success){
-                router.refresh();
+                setToastLabel("Document Upload Done! Processing it now")
+                setToastNotification(true);
                 onProcessDocument(results.data?.documentId)
+            }else{
+                setToastLabel("Error Uploading the Document!Please try again later....")
+                setToastNotification(true);
+                router.refresh()
             }
         }
         catch(err){
