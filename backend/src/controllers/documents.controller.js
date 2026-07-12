@@ -1,10 +1,27 @@
 const { json } = require("body-parser");
 const { fetchDocument, processDocumentUpload, extractFileDetails,fetchDocumentById,updateDocumentStatus, fetchDocuments,processDocumentData } = require("../services/documents.service");
 const {success,failure} = require("../utils/response.utils")
+const {parse} = require('path');
 
 const uploadDocument = async  (req, res) =>  {
-  console.log(req.file)
+  const MB_VALUE = 10
+  const MAX_FILE_SIZE = MB_VALUE * 1024 * 1024;
+  if(!req.file){
+    return failure(res,`File Not Present!Check the uploaded file`,400)
+  }
+  const file = req.file;
+  console.log(req.file);
+  const {ext} = (parse(file.originalname))
+  if(file.size > MAX_FILE_SIZE){
+    return failure(res,`File Size more than ${MB_VALUE} MB. Upload a file less than ${MB_VALUE} MB`,415)
+  }
+  if(file.mimetype !== "application/pdf" || ext.toLowerCase() !== '.pdf') {
+      return failure(res,`File should be a pdf`,415)
+  }
   const data = await processDocumentUpload({file:req.file});
+  // setTimeout(()=>{
+  //   return success(res,data,'Upload Successful!',200)
+  // },5000)
   return success(res,data,'Upload Successful!',200)
 }
 
@@ -26,9 +43,10 @@ const processDocument = async (req,res) => {
       },'Document already processsed!',200)
     }else{
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
-      if(processedDoc?.data?.documentId && processedDoc?.data?.success){
+      console.log('processDoc',processedDoc)
+      if(processedDoc?.documentId && processedDoc.success){
         return success(res,{
-                documentId:processedDoc.data.documentId
+                documentId:processedDoc.documentId
                 },
                 'Document processsed!',200
               )

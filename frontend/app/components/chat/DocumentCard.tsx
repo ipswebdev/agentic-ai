@@ -11,12 +11,18 @@ interface DocumentCardProps{
 }
 export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
     const router = useRouter()
-    const onProcessDocument = async (id:string):Promise<void> => {
-        const result = await processDocument(id);
+    const onProcessDocument = async ():Promise<void> => {
+        const result = await processDocument(file.id);
         console.log(result)
-        if(result && result.success && result.documentId === id){
+        if(result && result.success && result.documentId === file.id){
             router.refresh()
         }
+    }
+    const handleDocSelect = (file:UserDocument) => {
+        if(file.status !== 'READY'){
+            return;
+        }
+        onDocSelect(file);
     }
     const lastUpdatedStr = `${(new Date(file.updatedAt)).toDateString()} at ${(new Date(file.updatedAt)).toTimeString()}`   
     const statusBadge = () => {
@@ -30,22 +36,30 @@ export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
 
         case "PROCESSING":
             return (
-                <span className="rounded-full bg-yellow-900 px-2 py-1 text-xs font-medium text-yellow-300">
-                    🟡 Processing
-                </span>
+                // <span className="rounded-full bg-yellow-900 px-2 py-1 text-xs font-medium text-yellow-300">
+                //     🟡 Processing
+                // </span>
+                <Button
+                    label="Process Document"
+                    onUserClick={() => onProcessDocument()}
+                />
             );
 
         case "UPLOADED":
             return (
-                <span className="rounded-full bg-yellow-900 px-2 py-1 text-xs font-medium text-yellow-300">
-                    🟡 Processing
-                </span>
+                // <span className="rounded-full bg-yellow-900 px-2 py-1 text-xs font-medium text-yellow-300">
+                //     🟡 Processing
+                // </span>
+                <Button
+                    label="Process Document"
+                    onUserClick={() => onProcessDocument()}
+                />
             );
         case "FAILED":
             return (
                 <Button
                     label="Process Document"
-                    onUserClick={() => onProcessDocument(file.id)}
+                    onUserClick={() => onProcessDocument()}
                 />
             );
 
@@ -59,7 +73,7 @@ export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
 };
 return (
     <div
-            onClick={() => onDocSelect(file)}
+            onClick={() => handleDocSelect(file)}
             className="
                 cursor-pointer
                 border-b

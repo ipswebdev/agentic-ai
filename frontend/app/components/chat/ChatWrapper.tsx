@@ -15,6 +15,7 @@ interface ChatWrapperProps {
 export default function ChatWrapper({documents}:ChatWrapperProps) {
     const router = useRouter();
     const [selectedDoc , setSelectedDoc] = useState<UserDocument|null>(null)
+    const [uploadInProgress , setUploadState] = useState(false)
     const [loading , setLoader] = useState(false)
     const [showToastNotification,setToastNotification] = useState(false);
     const [toastLabel,setToastLabel] = useState('')
@@ -38,15 +39,19 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         }
     }
     const onUploadDocument = async (file:File):Promise<void> => {
+        setUploadState(true);
         try{
             const results = await uploadDocument(file);
             if(results?.data?.documentId && results.success){
                 setToastLabel("Document Upload Done! Processing it now")
                 setToastNotification(true);
+                router.refresh();
+                setUploadState(false)
                 onProcessDocument(results.data?.documentId)
             }else{
                 setToastLabel("Error Uploading the Document!Please try again later....")
                 setToastNotification(true);
+                setUploadState(false)
                 router.refresh()
             }
         }
@@ -54,6 +59,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
             console.log(err);
             setToastLabel("Error: Unable to Upload the document")
             setToastNotification(true);
+            setUploadState(false)
         }
         
     }
@@ -62,7 +68,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         setToastNotification(false);
     }
 
-    const [messageList,setMessageList] = useState<Message[]>([])
+    const [messageList,setMessageList] = useState<Message[]>([]);
     const onMessageSent = (message:string):void => {
         setToastNotification(false);
         if(!selectedDoc?.id){
@@ -96,7 +102,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         }
         <SelectedDocument selectedDoc={selectedDoc}></SelectedDocument>
         <div className="flex flex-1 overflow-hidden">
-            <DocumentSidebar onUploadDocument={(f)=>onUploadDocument(f)} onDocSelect={onDocSelect} documents={documents}></DocumentSidebar>
+            <DocumentSidebar uploadInProgress={uploadInProgress} onUploadDocument={(f)=>onUploadDocument(f)} onDocSelect={onDocSelect} documents={documents}></DocumentSidebar>
             <ChatWindow selectedDocument={selectedDoc?.fileName} loading={loading} messages={messageList} onMessageSend={onMessageSent}></ChatWindow>
         </div>
     </div>

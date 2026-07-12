@@ -1,7 +1,7 @@
 import { useState } from "react";
 interface ChatInputProps{
   loading:boolean,
-  onMessageSend:(message:string)=>void
+  onMessageSend:(message:string)=>void,
 }
 export default function ChatInput({onMessageSend,loading}:ChatInputProps) {
     const [message,setMessage] = useState('')

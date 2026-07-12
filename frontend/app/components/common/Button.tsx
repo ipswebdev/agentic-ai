@@ -1,6 +1,6 @@
 
 // "use client"
-export default function Button({label = "Test",onUserClick}) {
+export default function Button({isDisabled,label = "Test",onUserClick}) {
   return (
     <button onClick={()=>onUserClick()} className="w-full
         rounded-lg
@@ -15,7 +15,7 @@ export default function Button({label = "Test",onUserClick}) {
         hover:bg-blue-500
         active:scale-[0.98]
         disabled:cursor-not-allowed
-        disabled:opacity-50">
+        disabled:opacity-50" disabled={isDisabled}>
         {label}
     </button>
   );

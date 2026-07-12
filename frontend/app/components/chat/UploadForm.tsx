@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 import Button from "../common/Button";
 
 interface UploadFormProps{
-    onUploadDocument:(file:File)=>void
+    onUploadDocument:(file:File)=>void,
+    uploadInProgres:boolean
 }
 
-export default function UploadForm({ onUploadDocument }:UploadFormProps) {
+export default function UploadForm({ onUploadDocument,uploadInProgres }:UploadFormProps) {
     const [showUploadDialog, setUploadDialog] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -43,6 +44,7 @@ export default function UploadForm({ onUploadDocument }:UploadFormProps) {
                 </div>
 
                 <Button
+                    isDisabled={uploadInProgres}
                     label="📄 Upload Document"
                     onUserClick={onDocUpload}
                 />

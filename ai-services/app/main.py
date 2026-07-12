@@ -104,21 +104,34 @@ def health():
 
 
 def getTextFromPdf(req):
-    filePath = get_absolute_file_path(req.filePath)
-    content = extractPDF(filePath)
-    pages = content.pages
-    extractedText = extractText(pages)
+    try:
+        filePath = get_absolute_file_path(req.filePath)
+        content = extractPDF(filePath)
+        pages = content.pages
+        extractedText = extractText(pages)
+    except Exception as err:
+        raise PDFExtractionException(f"Failed to extract PDF {filePath}") from err
+    if(len(pages) == 0):
+        raise PDFExtractionException("No Pages")
+    if(len(extractedText.strip()) == 0):
+        raise PDFExtractionException("No Readable Text in PDF")
     return extractedText
 
 
-def generateChunks(req):
-    try:
-        extractedText = getTextFromPdf(req)
-        createdChunks = createChunks(extractedText, req.documentId, 100, 10)
-        return createdChunks
-    except Exception as err:
-        raise ChunkGenerationException("Chunk Creation Failed!") from err
 
+def generateChunks(req):
+    extractedText = getTextFromPdf(req);
+    try:
+        createdChunks = createChunks(extractedText, req.documentId, 100, 10)
+        if len(createdChunks) == 0:
+            raise ChunkGenerationException(
+                "No chunks generated."
+            )
+        return createdChunks
+    except ChunkGenerationException:
+        raise
+    except Exception as err:    
+        raise ChunkGenerationException(f"Chunk Generation exception ${err}") from err
 
 def storeChunks(createdChunks):
     try:
@@ -165,9 +178,12 @@ def process_document(req: DocumentMetadata):
                 generateAndStoreEmbeddings(existingChunks, req.documentId)
             chunksLength = len(existingChunks)
         else:
+            print("No Chunks")
             markDocStatus(req.documentId, "PROCESSING")
             createdChunks = generateChunks(req)
             storedChunks = storeChunks(createdChunks)
+            if len(storedChunks) != len(createdChunks):
+                raise ChunkStorageException('All Chunks Not Stored!')
             chunksLength = len(storedChunks)
             generateAndStoreEmbeddings(storedChunks, req.documentId)
         markDocStatus(req.documentId, "READY")
@@ -258,12 +274,11 @@ def getFile(path):
 
 
 def extractPDF(path):
-    try:
-        reader = PdfReader(path)
-        return reader
-    except Exception as err:
-        raise PDFExtractionException(f"Failed to extract PDF {path}") from err
-
+    reader = PdfReader(path)
+    if(reader.is_encrypted):
+        raise PDFExtractionException("Encrypted PDF")
+    return reader
+    
 
 def extractText(pages: list):
     text = ''
@@ -293,27 +308,40 @@ def generateEmbeddings(chunks):
                 embedding=generatedEmbedding.embeddings[0].values
             )
             generatedEmbeddings.append(documentEmbedding.model_dump())
+        if(len(generatedEmbeddings) != len(chunks)):
+            raise EmbeddingGenerationException(
+            'Embeddings and Chunks not equal')
         return generatedEmbeddings
+    except EmbeddingGenerationException:
+        raise 
     except Exception as err:
         raise EmbeddingGenerationException(
-            'Embedding Generation failed') from err
+        "Embedding Generation failed"
+    ) from err
 
 
 def storeEmbeddings(embeddings):
     try:
-        storeDocEmbeddings(embeddings)
+        return storeDocEmbeddings(embeddings)
     except Exception as err:
         raise EmbeddingStorageException('Embedding Storage Failed') from err
 
 
 def generateAndStoreEmbeddings(chunks, documentId):
-
     generatedEmbeddings = generateEmbeddings(chunks)
-    storeEmbeddings(generatedEmbeddings)
-    updateChunkStatus(
-        documentId,
-        "EMBEDDED"
-    )
+    if(not len(chunks) == len(generatedEmbeddings)):
+        raise EmbeddingGenerationException('Mismatch in count of Chunks and Embeddings')
+    storedEmbeddings = storeEmbeddings(generatedEmbeddings)
+    if(not len(storedEmbeddings) == len(generatedEmbeddings)):
+        raise EmbeddingStorageException('Mismatch in storing all the generated Embeddings')
+    print('Stored Embeddings',len(storedEmbeddings),type(storedEmbeddings),storedEmbeddings)
+    try: 
+        updateChunkStatus(
+            documentId,
+            "EMBEDDED"
+        )
+    except Exception as err:
+        raise EmbeddingStorageException("Failed to update Chunk Status") from err
 
 
 def buildChatContext(topMatches: list):
