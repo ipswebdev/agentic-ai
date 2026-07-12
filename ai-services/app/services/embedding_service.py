@@ -1,6 +1,9 @@
 from google import genai
 from app.config.settings import GEMINI_API_KEY
 
+class AIModelUnavailableException(Exception):
+    pass
+
 client = genai.Client(api_key=GEMINI_API_KEY)
 def generate_embedding(text):
     response = client.models.embed_content(
@@ -46,5 +49,5 @@ def get_answer(question,context):
                 "Gemini 2.0 Flash failed:",
                 err2
             )
-            return "AI Model Currently unavailable due to. Try after sometime."
+            raise AIModelUnavailableException("AI Model Currently unavailable. Try after sometime.") from err2
     
