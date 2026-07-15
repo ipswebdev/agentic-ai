@@ -5,9 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pypdf import PdfReader
+import logging
 from pathlib import Path
 
-from app.config.database import connectToDB
+from app.config.database import DbConnectionException, connectToDB
+from app.config import logger
 
 from app.repositories.chunk_repository import storeChunk, updateChunkStatus, fetchChunkById
 from app.repositories.embedding_repository import DocumentEmbedding, storeEmbedding, fetchEmbeddingsByDocId, storeDocEmbeddings
@@ -17,6 +19,8 @@ from app.services.embedding_service import generate_embedding, get_answer, AIMod
 from app.services.chunk_service import generateChunkText, createChunks
 
 import math
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 app.add_middleware(
@@ -28,9 +32,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-db = connectToDB()
-print('db', db)
-
 
 class ChatRequest(BaseModel):
     message: str
@@ -92,6 +93,13 @@ class DocEmbeddingsFetchException(RepositoryException):
 
 class ChunkGenerationException(DocumentProcessingException):
     pass
+
+
+try:
+    db = connectToDB()
+    logger.info("You successfully connected to MongoDB! %s",db);
+except DbConnectionException as e:
+    logger.exception("DbConnectionException : Connected to MongoDB Fail");
 
 
 @app.get("/health")
@@ -169,8 +177,8 @@ def process_document(req: DocumentMetadata):
         existingChunks = fetchChunkById(req.documentId)
         docEmbeddings = getDocEmbeddings(req.documentId)
         chunksLength = 0
-        print("Chunks already exist", req.documentId, hasChunks(existingChunks))
-        print("Embeddings complete", embeddingsComplete(
+        logger.info("Chunks already exist %s %s", req.documentId, hasChunks(existingChunks))
+        logger.info("Embeddings complete %s", embeddingsComplete(
             existingChunks, docEmbeddings))
         if hasChunks(existingChunks):
             if (not embeddingsComplete(existingChunks, docEmbeddings)):
@@ -178,7 +186,7 @@ def process_document(req: DocumentMetadata):
                 generateAndStoreEmbeddings(existingChunks, req.documentId)
             chunksLength = len(existingChunks)
         else:
-            print("No Chunks")
+            logger.info("No Chunks")
             markDocStatus(req.documentId, "PROCESSING")
             createdChunks = generateChunks(req)
             storedChunks = storeChunks(createdChunks)
@@ -197,27 +205,27 @@ def process_document(req: DocumentMetadata):
         )
 
     except RepositoryException as err:
-        print('RepositoryException', err)
+        logger.exception('RepositoryException')
         return JSONResponse(
             status_code=500,
             content={"message": str(err), "success": False}
         )
     except DocumentProcessingException as err:
-        print('DocumentProcessingException', err)
+        logger.exception('DocumentProcessingException')
         try:
             markDocStatus(req.documentId, "FAILED")
         except DocumentStatusUpdateException as statusErr:
-            print('DocumentStatusUpdateException', statusErr)
+            logger.exception('DocumentStatusUpdateException')
         return JSONResponse(
             status_code=500,
             content={"message": str(err), "success": False}
         )
     except Exception as err:
-        print('Unexpected Exception', err)
+        logger.exception('Unexpected Exception')
         try:
             markDocStatus(req.documentId, "FAILED")
         except Exception as statusErr:
-            print('DocumentStatusUpdateException', statusErr)
+            logger.exception('DocumentStatusUpdateException')
         return JSONResponse(
             status_code=500,
             content={"message": str(err), "success": False}
@@ -228,7 +236,6 @@ def generateCosineSimilarity(questionEmbeddings,docEmbeddings):
     qValues = questionEmbeddings
     cosineMatches = []
     for doc in docEmbeddings:
-        # print(doc["chunkId"])
         cosValue = cosineSimilarity(qValues, doc["embedding"])
         match = {
             "text": doc["text"],
@@ -253,11 +260,11 @@ def generate_answer(req: ChatRequest):
             "matches":  cosineMatches[:3]})
     
     except AIModelUnavailableException as err:
-        print("AI MODEL Error",err)
+        logger.exception("AI MODEL Error")
         return JSONResponse(status_code=500,content={"success":False,"message":str(err)})
 
     except AnswerGenerationException as err: 
-        print("Err Generating Answer",err)
+        logger.exception("Err Generating Answer")
         return JSONResponse(status_code=500,content={"success":False,"message":str(err)})
 
 @app.get("/hello")
@@ -334,7 +341,7 @@ def generateAndStoreEmbeddings(chunks, documentId):
     storedEmbeddings = storeEmbeddings(generatedEmbeddings)
     if(not len(storedEmbeddings) == len(generatedEmbeddings)):
         raise EmbeddingStorageException('Mismatch in storing all the generated Embeddings')
-    print('Stored Embeddings',len(storedEmbeddings),type(storedEmbeddings),storedEmbeddings)
+    logger.info('Stored Embeddings %d',len(storedEmbeddings))
     try: 
         updateChunkStatus(
             documentId,

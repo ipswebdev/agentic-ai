@@ -1,6 +1,10 @@
 from google import genai
 from app.config.settings import GEMINI_API_KEY
+import app.config.logger
 
+import logging
+
+logger = logging.getLogger(__name__)
 class AIModelUnavailableException(Exception):
     pass
 
@@ -34,9 +38,8 @@ def get_answer(question,context):
         )
         return response.text
     except Exception as err1:
-        print(
-            "Gemini 2.5 Flash failed:",
-            err1
+        logger.exception(
+            "Gemini 2.5 Flash failed:"
         )
         try:
             response = client.models.generate_content(
@@ -45,9 +48,8 @@ def get_answer(question,context):
             )
             return response.text
         except Exception as err2:
-            print(
-                "Gemini 2.0 Flash failed:",
-                err2
+            logger.exception(
+                "Gemini 2.0 Flash failed:"
             )
             raise AIModelUnavailableException("AI Model Currently unavailable. Try after sometime.") from err2
     

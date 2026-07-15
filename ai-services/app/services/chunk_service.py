@@ -1,4 +1,9 @@
 from app.models.document_chunk import DocumentChunk
+import app.config.logger
+
+import logging
+
+logger = logging.getLogger(__name__)
 def generateChunkText(text,chunkSize,overlap):
     stride = chunkSize - overlap
     words = text.split()
@@ -11,7 +16,7 @@ def generateChunkText(text,chunkSize,overlap):
 
 def createChunks(text,documentId,chunkSize=5,overlap=2):
     chunks = generateChunkText(text,chunkSize,overlap)
-    print('createChunks',len(chunks))
+    logger.info('createChunks %d',len(chunks))
     documentChunks = []
     for i in range(0, len(chunks)):
         documentChunk = DocumentChunk(
