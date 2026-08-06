@@ -1,10 +1,10 @@
-const { json } = require("body-parser");
 const { fetchDocument, processDocumentUpload, extractFileDetails,fetchDocumentById,updateDocumentStatus, fetchDocuments,processDocumentData } = require("../services/documents.service");
 const {success,failure} = require("../utils/response.utils")
 const {parse} = require('path');
 const {DocumentProcessingException} = require("../exceptions/service.exception");
 const { DocumentFetchException,DocumentUpdateException,DocumentSaveException} = require("../exceptions/repository.exception");
 const {logger} = require("../config/logger");
+const  { unlink } = require("fs/promises");
 
 const uploadDocument = async  (req, res) =>  {
   const MB_VALUE = 10
@@ -52,6 +52,25 @@ const getDocument = async (req,res) => {
   }
 }
 
+const deleteDocument = async (req,res) => {
+  const {id} = {...req.params};
+  const userDoc = await fetchDocumentById(id);
+  const d = userDoc.document;
+  console.log('deleteDoc',d)
+  deleteDocumentFromDisk(d.filePath)
+  return success(res,d,'Successfully fetched document',200)
+}
+
+const deleteDocumentFromDisk = async function deleteFile(path) {
+  try {
+    console.log(`deleteDocumentFromDisk ${path}`);
+    const result = await unlink(path);
+    console.log(`Successfully deleted ${path}`,result);
+  } catch (error) {
+    console.error(`Error deleting file: ${error.message}`);
+  }
+}
+
 const processDocument = async (req,res) => {
   const {id} = {...req.params};
   try{
@@ -59,12 +78,15 @@ const processDocument = async (req,res) => {
   
   if(userDoc.success){
     if(userDoc.document.status === 'READY'){
+      deleteDocumentFromDisk(userDoc.document.filePath)
       return success(res,{
           "documentId": userDoc.document.id,
       },'Document already processsed!',200)
     }else{
+      console.log('Doc',id,userDoc.document.filePath)
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
       if(processedDoc?.documentId && processedDoc.success){
+        deleteDocumentFromDisk(userDoc.document.filePath)
         return success(res,{
                 documentId:processedDoc.documentId
                 },
@@ -72,9 +94,9 @@ const processDocument = async (req,res) => {
               )
       }else{
         logger.error('Error processing document',processedDoc?.message);
+        deleteDocumentFromDisk(userDoc.document.filePath)
         return failure(res,processedDoc?.message,500)
       }
-      
     }
   }else{
     logger.error('No such document exists',userDoc?.message);
@@ -150,5 +172,6 @@ module.exports = {
   getDocument,
   getDocuments,
   changeDocumentStatus,
-  processDocument
+  processDocument,
+  deleteDocument
 }

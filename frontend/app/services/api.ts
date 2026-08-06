@@ -10,6 +10,7 @@ const expressURL = EXPRESS_API_URL;
 export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
     console.log('expressURL',expressURL)
     const response = await fetch(`${expressURL}/documents`,);
+
     const data: FetchDocumentsResponse = await response.json()
     console.log('fetchuserdocuments',`${expressURL}/documents`,data)
     
