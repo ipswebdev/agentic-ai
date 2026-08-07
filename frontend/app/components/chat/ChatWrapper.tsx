@@ -19,6 +19,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const [loading , setLoader] = useState(false)
     const [showToastNotification,setToastNotification] = useState(false);
     const [toastLabel,setToastLabel] = useState('')
+    const [toastStatus,setToastStatus] = useState('INFO')
 
     const onDocSelect = (d:UserDocument):void => {
         setToastNotification(false);
@@ -31,10 +32,12 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         setToastNotification(false);
         if(result && result.success && result.data.documentId === id){
             setToastLabel("Document Processing Done!")
+            setToastStatus('INFO')
             setToastNotification(true);
             router.refresh()
         }else{
             setToastLabel("Error Processing the Document!Please try again later....")
+            setToastStatus('ERROR')
             setToastNotification(true);
         }
     }
@@ -44,12 +47,14 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
             const results = await uploadDocument(file);
             if(results?.data?.documentId && results.success){
                 setToastLabel("Document Upload Done! Processing it now")
+                setToastStatus('WARN')
                 setToastNotification(true);
                 router.refresh();
                 setUploadState(false)
                 onProcessDocument(results.data?.documentId)
             }else{
                 setToastLabel("Error Uploading the Document!Please try again later....")
+                setToastStatus('ERROR')
                 setToastNotification(true);
                 setUploadState(false)
                 router.refresh()
@@ -58,6 +63,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         catch(err){
             console.log(err);
             setToastLabel("Error: Unable to Upload the document")
+            setToastStatus('ERROR')
             setToastNotification(true);
             setUploadState(false)
         }
@@ -73,6 +79,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         setToastNotification(false);
         if(!selectedDoc?.id){
             setToastLabel("Please select a document first.")
+            setToastStatus('WARN')
             setToastNotification(true);
             return; 
         }
@@ -95,7 +102,7 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
         { showToastNotification && (
                 <Toast
                     message={toastLabel}
-                    status={"ERROR"}
+                    status={toastStatus}
                     onClose={()=>toggleToast()}
                 />
             )

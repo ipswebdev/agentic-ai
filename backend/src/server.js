@@ -2,24 +2,37 @@ require("dotenv").config();
 
 const express = require('express');
 const cors = require('cors');
-// const { sendMessage } = require('./controllers/chat.controller');
+const { logger } = require('./config/logger');
 const {chatRouter} = require('./routes/chat.routes');
 const { documentRouter } = require('./routes/documents.routes');
 const { connectDb } = require('./config/database');
+const {
+    FRONTEND_ENDPOINT,
+    PORT
+} = require("./config/env");
+const { success } = require("./utils/response.utils");
 
 const app = express();
 
-app.use(cors());
+const frontendEndpoint = FRONTEND_ENDPOINT;
+
+const corsOptions = {
+    origin: frontendEndpoint,
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json())
 
 connectDb()
 .then(()=>{
-  console.log('connection to MongoDB Success')
-  app.listen(3001, () => {
-    console.log('Backend running on port 3001');
+  logger.info('connection to MongoDB Success')
+  app.listen(PORT, () => {
+    logger.info(`Backend running on port ${PORT}`);
   });
 }).catch((err)=>{
-  console.error(err);
+  logger.error(err);
 })
 
 app.use('/chat',chatRouter);
@@ -30,7 +43,8 @@ app.use('/documents',documentRouter);
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'backend'
+    service: 'backend',
+    success:true
   });
 });
 

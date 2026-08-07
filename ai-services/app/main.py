@@ -17,16 +17,19 @@ from app.repositories.embedding_repository import DocumentEmbedding, storeEmbedd
 from app.services.document_service import updateDocumentStatus
 from app.services.embedding_service import generate_embedding, get_answer, AIModelUnavailableException
 from app.services.chunk_service import generateChunkText, createChunks
+from app.config.settings import EXPRESS_API_URL
 
 import math
+
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3001"
+        EXPRESS_API_URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
