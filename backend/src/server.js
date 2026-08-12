@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const { logger } = require('./config/logger');
 const {chatRouter} = require('./routes/chat.routes');
+const {authRouter} = require('./routes/auth.routes');
+
 const { documentRouter } = require('./routes/documents.routes');
 const { connectDb } = require('./config/database');
 const {
@@ -37,7 +39,7 @@ connectDb()
 
 app.use('/chat',chatRouter);
 app.use('/documents',documentRouter);
-
+app.use('/auth',authRouter);
 
 
 app.get('/health', (req, res) => {

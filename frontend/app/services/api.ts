@@ -56,3 +56,16 @@ export const  uploadDocument = async (file:File) => {
     })
     return results.json();
 }
+
+export const authenticateUser = async (authCode:string) => {
+    const payload = {authCode:authCode}
+    console.log('payload',payload)
+    const results = await fetch(`${expressURL}/auth/google/login`,{
+        method:'POST',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body:JSON.stringify(payload),
+    })
+    return results.json();
+}
