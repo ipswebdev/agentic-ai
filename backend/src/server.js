@@ -5,6 +5,7 @@ const cors = require('cors');
 const { logger } = require('./config/logger');
 const {chatRouter} = require('./routes/chat.routes');
 const {authRouter} = require('./routes/auth.routes');
+const {authMiddleware} = require('./middleware/auth.middleware')
 
 const { documentRouter } = require('./routes/documents.routes');
 const { connectDb } = require('./config/database');
@@ -12,7 +13,9 @@ const {
     FRONTEND_ENDPOINT,
     PORT
 } = require("./config/env");
-const { success } = require("./utils/response.utils");
+const { internalDocStatusUpdate } = require("./controllers/documents.controller");
+const { internalServiceMiddleware } = require("./middleware/internal-service.middleware");
+const { internalDocumentRouter } = require("./routes/internal-documents.routes");
 
 const app = express();
 
@@ -36,11 +39,7 @@ connectDb()
 }).catch((err)=>{
   logger.error(err);
 })
-
-app.use('/chat',chatRouter);
-app.use('/documents',documentRouter);
 app.use('/auth',authRouter);
-
 
 app.get('/health', (req, res) => {
   res.json({
@@ -49,6 +48,11 @@ app.get('/health', (req, res) => {
     success:true
   });
 });
+app.use('/internal',internalServiceMiddleware,internalDocumentRouter);
+app.use(authMiddleware)
+app.use('/chat',chatRouter);
+app.use('/documents',documentRouter);
+
 
 
 

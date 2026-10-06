@@ -1,10 +1,9 @@
-const { createDocument,fetchDocument, updateDocumentStatusbyId, fetchAllDocuments } = require("../repositories/document.repository");
-const { DocumentProcessingException } = require("../exceptions/service.exception");
-const {DocumentUploadException} = require("../exceptions/repository.exception")
+const { createDocument,fetchDocument, updateDocumentStatusbyId, fetchAllDocuments, deleteDocument } = require("../repositories/document.repository");
 const {logger} = require("../config/logger");
 const {
     FAST_API_URL
 } = require("../config/env");
+const { DocumentProcessingException } = require("../exceptions/service.exception");
 
 const extractFileDetails =  (file) => {
   const fileDetails = {
@@ -14,6 +13,26 @@ const extractFileDetails =  (file) => {
       filePath:file.path
     };
     return fileDetails;
+}
+
+const deleteDocumentFromMongo = async (id,userId) => {
+  try{
+    const deletedDoc = await deleteDocument(id,userId);
+    if (!deletedDoc) {
+      return {
+          success: false,
+          message: 'Document not found'
+        };
+    }
+    return {
+      success: true,
+      document: deletedDoc
+    };
+  }
+  catch(err){
+    logger.error('Error Deleting document status',err);
+    throw err;
+  }
 }
 
 const processDocumentData = async (id,filePath) => {
@@ -38,11 +57,14 @@ const processDocumentData = async (id,filePath) => {
 }
 
 const processDocumentUpload = async ({
-   file,
+   file,userId
     }) => {
       try{
+        if(!userId){
+          throw new Error('User not found for documentCreation') 
+        }
         const uploadedFile = extractFileDetails(file)
-        const createdDocument = await createDocument(uploadedFile); 
+        const createdDocument = await createDocument({...uploadedFile,userId:userId}); 
       
         const res = {
           documentId: createdDocument._id.toString(),
@@ -51,16 +73,18 @@ const processDocumentUpload = async ({
         return res;
       }catch(err){
         logger.error('Error uploading document',err);
-        if(err instanceof DocumentSaveException){
           throw err;
-        }
-        throw new DocumentUploadException("Unable to upload document.");
       }
 }
 
-const fetchDocumentById = async (id) => {
-  // try{
-    const doc = await fetchDocument(id);
+const fetchDocumentById = async (id,userId) => {
+    const doc = await fetchDocument(id,userId);
+    if (!doc) {
+      return {
+          success: false,
+          message: 'Document not found'
+        };
+    }
     const docModification = {
       id: doc._id,
       fileName: doc.fileName,
@@ -71,25 +95,17 @@ const fetchDocumentById = async (id) => {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     }
-     if (!doc) {
-      return {
-          success: false,
-          message: 'Document not found'
-        };
-    }
+     
     return {
       success: true,
       document: docModification
     };
-  // }catch(err){
-  //   throw new DocumentFetchException(err);
-  // }
 }
 
-const fetchDocuments = async () => {
+const fetchDocuments = async (userId) => {
   try{
-    const docs = await fetchAllDocuments();
-    console.log('fetch!',docs)
+    const docs = await fetchAllDocuments(userId);
+    // console.log('fetch!',docs)
      if (!docs?.length) {
       return {
           success: true,
@@ -103,9 +119,7 @@ const fetchDocuments = async () => {
     };
   }catch(err){
     logger.error('Error fetching documents',err);
-    if(err instanceof DocumentFetchException){
-      throw new DocumentFetchException(err);
-    }
+      throw err;
   }
     
 }
@@ -120,7 +134,7 @@ const isStatusValid = (status) => {
   return isValid;    
 } 
 
-const updateDocumentStatus = async (id,status) => {
+const updateDocumentStatus = async (id,status,userId) => {
   if(!isStatusValid(status)){
     return {
       success: false,
@@ -129,7 +143,7 @@ const updateDocumentStatus = async (id,status) => {
     };
   }
   try{
-    const updatedDoc = await updateDocumentStatusbyId(id, status);
+    const updatedDoc = await updateDocumentStatusbyId(id, status,userId);
     if (!updatedDoc) {
       return {
           success: false,
@@ -143,7 +157,7 @@ const updateDocumentStatus = async (id,status) => {
   }
   catch(err){
     logger.error('Error updating document status',err);
-    throw new DocumentUpdateException(err);
+    throw err;
   }
   
 }
@@ -154,5 +168,6 @@ module.exports = {
     extractFileDetails,
     updateDocumentStatus,
     fetchDocuments,
-    processDocumentData
+    processDocumentData,
+    deleteDocumentFromMongo
 }

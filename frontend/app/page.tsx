@@ -1,27 +1,40 @@
 "use client"
-import { useGoogleLogin } from "@react-oauth/google";
 import Image from "next/image";
 import Button from "./components/common/Button";
-import { authenticateUser } from "./services/api";
+
+import { useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { AuthContext } from "./context/auth.context";
 
 
 export default function Home() {
- const login = useGoogleLogin({
-    onSuccess: codeResponse => {console.log(codeResponse);loginToExpress(codeResponse.code)},
-    onError: (err)=>console.log('auth error',err),
-    flow: 'auth-code',
-  });
-  const loginToExpress = async (authCode) => {
-    const results = await authenticateUser(authCode);
-    console.log(results);
+ const router = useRouter();
+ const authContext = useContext(AuthContext)
+ useEffect(()=>{
+  console.log('userData',authContext)
+  if(authContext.status === 'authenticated'){
+    router.push('/chat')
   }
+ },[authContext.status])
+ 
+
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-    <Button
-      isDisabled={false}
-      label="Sign in with Google"
-      onUserClick={()=> login()}
-    />
+      {authContext.status === 'checking' &&
+        'Checking Authentication Status' 
+      }
+      {
+       authContext.status === 'authenticated' &&
+        'User Already Authenticated'
+      }
+      {
+        authContext.status === 'unauthenticated' &&
+      <Button
+          isDisabled={false}
+          label="Sign in with Google"
+          onUserClick={()=> authContext.login()}
+        />
+      }
     </div>
   )
     

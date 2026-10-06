@@ -1,6 +1,7 @@
 const {GOOGLE_TOKEN_ENDPOINT,GOOGLE_AUTH_CLIENT_ID,GOOGLE_AUTH_CLIENT_SECRET,GOOGLE_REDIRECT_URI,JWT_SECRET} =  require('../config/env')
 const {OAuth2Client} = require('google-auth-library')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { fetchUserDetailsByGoogleSub, createNewUser } = require('./user.service');
 
 const EXPIRY_HRS = 12;
 const EXPIRY_MINS = 0
@@ -22,7 +23,12 @@ const getGoogleTokens = async (authCode) =>{
     })
     const google_token = await results.json();
     const userDetails = await verifyGoogleToken(google_token.id_token)
-    return userDetails
+    if(userDetails && userDetails.jwt){
+        return userDetails
+    }else{
+        return null
+    }
+    
 }
 
 const verifyGoogleToken = async (idToken) => {
@@ -32,22 +38,48 @@ const verifyGoogleToken = async (idToken) => {
     
     const payload = await result.getPayload();
 
-    const jwtToken = createJWTToken(payload)
-    const verifiedData = {
-        name:payload.name,
-        email:payload.email,
-        picture:payload.picture,
-        jwt:jwtToken
-    }
-    return {...verifiedData}
+    
+        if(payload && payload.sub){
+            const userDetails = await fetchUserDetailsByGoogleSub (payload.sub);
+            if(userDetails.success && userDetails.user){
+                const jwtToken = createJWTToken(userDetails.user)
+                const verifiedData = {
+                    name:payload.name,
+                    email:payload.email,
+                    jwt:jwtToken,
+                    id:userDetails.user.id,
+                }
+                return {...verifiedData} 
+            }else{
+                const createdUser = await createNewUser({
+                    name:payload.name,
+                    email:payload.email,
+                    googleSub:payload.sub,
+                });
+                if(createdUser && createdUser.user){
+                    const jwtToken = createJWTToken(createdUser.user)
+                    const verifiedData = {
+                        name:createdUser.user.name,
+                        email:createdUser.user.email,
+                        id:createdUser.user.id,
+                        jwt:jwtToken,
+                    }
+                    return {...verifiedData} 
+                    }
+            }
+        }else{
+            return null
+        }
+    
 }
 
 const createJWTToken = (userDetails) => {
-    const jwtExpiry =  (EXPIRY_HRS * 60 + EXPIRY_MINS)  * 60;  
+    const jwtExpiry =  (EXPIRY_HRS * 60 + EXPIRY_MINS)  * 60; 
     const jwtPayload = {
         name:userDetails.name,
         email:userDetails.email,
-        sub:userDetails.sub,
+        id:userDetails.id,
+        googleSub:userDetails.googleSub
     }
     const signedToken = jwt.sign(jwtPayload,JWT_SECRET,{expiresIn:jwtExpiry});
     return signedToken;

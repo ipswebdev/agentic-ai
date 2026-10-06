@@ -1,8 +1,9 @@
 const { Document } = require('../models/document.model')
-const { DocumentSaveException, DocumentFetchException, DocumentUpdateException } = require('../exceptions/repository.exception')
+const { DocumentSaveException, DocumentFetchException, DocumentUpdateException,DocumentDeleteException } = require('../exceptions/repository.exception')
 const {logger} = require('../config/logger')
 const createDocument = async (documentData) => {
     try{
+        console.log('createDoc',documentData)
         const res = await Document.create(documentData);
         return res; 
     }catch(err){
@@ -11,10 +12,9 @@ const createDocument = async (documentData) => {
     }
 }
 
-const fetchDocument = async (id) => {
+const fetchDocument = async (id,userId) => {
     try{
-        const res = await Document.findById(id);
-        console.log('fetchDoc',res,)
+        const res = await Document.findOne({_id:id,userId:userId});
         return res;
     }catch(err){
         logger.error('Error fetching document',err);
@@ -22,9 +22,9 @@ const fetchDocument = async (id) => {
     }
 }
 
-const fetchAllDocuments = async () => {
+const fetchAllDocuments = async (userId) => {
     try{
-        const res = await Document.find({});
+        const res = await Document.find({userId:userId});
         return res; 
     }catch(err){
         logger.error('Error fetching documents',err);
@@ -32,9 +32,31 @@ const fetchAllDocuments = async () => {
     } 
 }
 
-const updateDocumentStatusbyId = async (id,status) => {
+const deleteDocument = async (id,userId) => {
     try{
-        const res = await Document.findByIdAndUpdate(id,{status:status},{new: true});
+        const res = await Document.findOneAndDelete({_id:id,userId:userId});
+        return res;
+    }catch(err){
+        logger.error('Error Deleting document',err);
+        throw new DocumentDeleteException("Unable to Delete document.");
+    }
+}
+
+
+const updateDocumentStatusbyId = async (id,status,userId) => {
+    try{
+        const res = await Document.findOneAndUpdate({_id:id,userId:userId},{status:status},{new: true});
+        return res;
+    }catch(err){
+        logger.error('Error updating document status',err);
+        throw new DocumentUpdateException("Unable to update document status.");
+    }
+    
+}
+
+const updateDocumentStatusInternally = async (id,status,userId) => {
+    try{
+        const res = await Document.findOneAndUpdate({_id:id},{status:status},{new: true});
         return res;
     }catch(err){
         logger.error('Error updating document status',err);
@@ -47,5 +69,7 @@ module.exports = {
   createDocument,
   fetchDocument,
   updateDocumentStatusbyId,
-  fetchAllDocuments
+  fetchAllDocuments,
+  deleteDocument,
+  updateDocumentStatusInternally
 };

@@ -27,6 +27,11 @@ const documentSchema = new mongoose.Schema({
       ],
       default: 'UPLOADED'
     },
+    userId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true,
+    }
 },
 {
 timestamps: true

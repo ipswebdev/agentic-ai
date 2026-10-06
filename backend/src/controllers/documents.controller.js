@@ -1,4 +1,4 @@
-const { fetchDocument, processDocumentUpload, extractFileDetails,fetchDocumentById,updateDocumentStatus, fetchDocuments,processDocumentData } = require("../services/documents.service");
+const { fetchDocument, processDocumentUpload, extractFileDetails,fetchDocumentById,updateDocumentStatus, fetchDocuments,processDocumentData, deleteDocumentFromMongo } = require("../services/documents.service");
 const {success,failure} = require("../utils/response.utils")
 const {parse} = require('path');
 const {DocumentProcessingException} = require("../exceptions/service.exception");
@@ -24,7 +24,8 @@ const uploadDocument = async  (req, res) =>  {
       return failure(res,`File should be a pdf`,415)
   }
   try{
-    const data = await processDocumentUpload({file:req.file});
+    
+    const data = await processDocumentUpload({file:req.file,userId:req.user.id});
     return success(res,data,'Upload Successful!',200)
   }catch(err){
     if(err instanceof DocumentSaveException){
@@ -40,9 +41,14 @@ const uploadDocument = async  (req, res) =>  {
 const getDocument = async (req,res) => {
   const {id} = {...req.params};
   try{
-    const userDoc = await fetchDocumentById(id);
-    const d = userDoc.document
-    return success(res,d,'Successfully fetched document',200)
+    const userDoc = await fetchDocumentById(id,req.user.id);
+    if(userDoc && userDoc?.document){
+      const d = userDoc.document
+      return success(res,d,'Successfully fetched document',200)
+    }else{
+      return  failure(res,'No document found',404)
+    }
+    
   }catch(err){
     logger.error('Error fetching document',err);
     if(err instanceof DocumentFetchException){
@@ -52,30 +58,65 @@ const getDocument = async (req,res) => {
   }
 }
 
-const deleteDocument = async (req,res) => {
-  const {id} = {...req.params};
-  const userDoc = await fetchDocumentById(id);
-  const d = userDoc.document;
-  console.log('deleteDoc',d)
-  deleteDocumentFromDisk(d.filePath)
-  return success(res,d,'Successfully fetched document',200)
-}
+const deleteDocument =async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const userDoc = await fetchDocumentById(id, req.user.id);
+
+    if (!userDoc?.document) {
+      return failure(res, 'No Document available', 404);
+    }
+
+    const deletedDoc = await deleteDocumentFromMongo(id, req.user.id);
+
+    if (!deletedDoc.success) {
+      return failure(res, 'Could not delete document from DB', 500);
+    }
+
+    const deletedFromDisk = await deleteDocumentFromDisk(
+      deletedDoc.document.filePath
+    );
+
+    if (deletedFromDisk) {
+      return success(
+        res,
+        deletedDoc,
+        'Successfully Deleted document',
+        200
+      );
+    }
+
+    return success(
+      res,
+      deletedDoc,
+      'Document Deleted from DB but still present in filesystem',
+      200
+    );
+
+  } catch (err) {
+    logger.error('Error deleting document', err);
+    return failure(res, 'Error deleting document', 500);
+  }
+};
 
 const deleteDocumentFromDisk = async function deleteFile(path) {
   try {
-    console.log(`deleteDocumentFromDisk ${path}`);
-    const result = await unlink(path);
-    console.log(`Successfully deleted ${path}`,result);
+    await unlink(path);
+    logger.info(`Successfully deleted file: ${path}`);
+    return true;
   } catch (error) {
-    console.error(`Error deleting file: ${error.message}`);
+    logger.error(`Error deleting file: ${path}`, error);
+    return false;
   }
 }
 
 const processDocument = async (req,res) => {
   const {id} = {...req.params};
+   console.log('processDocument pre try',id,req.user)
   try{
-    const userDoc = await fetchDocumentById(id);
-  
+    const userDoc = await fetchDocumentById(id,req.user.id);
+  console.log('processDocument',id,req.user)
   if(userDoc.success){
     if(userDoc.document.status === 'READY'){
       deleteDocumentFromDisk(userDoc.document.filePath)
@@ -86,7 +127,7 @@ const processDocument = async (req,res) => {
       console.log('Doc',id,userDoc.document.filePath)
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
       if(processedDoc?.documentId && processedDoc.success){
-        deleteDocumentFromDisk(userDoc.document.filePath)
+        // deleteDocumentFromDisk(userDoc.document.filePath)
         return success(res,{
                 documentId:processedDoc.documentId
                 },
@@ -94,7 +135,7 @@ const processDocument = async (req,res) => {
               )
       }else{
         logger.error('Error processing document',processedDoc?.message);
-        deleteDocumentFromDisk(userDoc.document.filePath)
+        // deleteDocumentFromDisk(userDoc.document.filePath)
         return failure(res,processedDoc?.message,500)
       }
     }
@@ -115,9 +156,10 @@ const processDocument = async (req,res) => {
 }
 
 
+
 const getDocuments = async (req,res) => {
   try{
-    const userDocs = await fetchDocuments();
+    const userDocs = await fetchDocuments(req.user.id);
     const documents = userDocs.documents.map(d=>{
       return{
         id:d._id,
@@ -142,21 +184,27 @@ const getDocuments = async (req,res) => {
 const changeDocumentStatus = async (req,res) => {
   const {id} = {...req.params};
   const status = req.body.status;
+  console.log('changeDocumentStatus',req.user)
   try{
-    const userDoc = await updateDocumentStatus(id,status);
-    const d = userDoc.document;
-    return success(res,{document:{
-        id:d._id,
-        fileName:d.fileName,
-        filePath: d.filePath,
-        mimeType: d.mimeType,
-        size: d.size,
-        status: d.status,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt
-      }},
-      'Updated Document Status',200
-    )
+    const userDoc = await updateDocumentStatus(id,status,req.user.id);
+    if(userDoc?.document){
+      const d = userDoc.document;
+      return success(res,{document:{
+          id:d._id,
+          fileName:d.fileName,
+          filePath: d.filePath,
+          mimeType: d.mimeType,
+          size: d.size,
+          status: d.status,
+          createdAt: d.createdAt,
+          updatedAt: d.updatedAt
+        }},
+        'Updated Document Status',200
+      )
+    }else{
+       return  failure(res,'No document found',404)
+    }
+    
   }catch(err){
     logger.error('Error updating document status',err);
     if(err instanceof DocumentUpdateException){
@@ -173,5 +221,5 @@ module.exports = {
   getDocuments,
   changeDocumentStatus,
   processDocument,
-  deleteDocument
+  deleteDocument,
 }

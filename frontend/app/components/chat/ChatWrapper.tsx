@@ -1,18 +1,18 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChatWindow from "./ChatWindow";
 import DocumentSidebar from "./DocumentSidebar";
 import SelectedDocument from "./SelectedDocument";
-import { askQuestion,processDocument,uploadDocument } from "@/app/services/api";
+import { askQuestion,fetchUserDocuments,processDocument,uploadDocument } from "@/app/services/api";
 import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
 import  { UserDocument } from "../../types/UserDocument"
 import { Message, Sender } from "@/app/types/ChatMessage";
-interface ChatWrapperProps {
-    documents: UserDocument[];
-}
+// interface ChatWrapperProps {
+//     documents: UserDocument[];
+// }
 
-export default function ChatWrapper({documents}:ChatWrapperProps) {
+export default function ChatWrapper() {
     const router = useRouter();
     const [selectedDoc , setSelectedDoc] = useState<UserDocument|null>(null)
     const [uploadInProgress , setUploadState] = useState(false)
@@ -20,21 +20,37 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
     const [showToastNotification,setToastNotification] = useState(false);
     const [toastLabel,setToastLabel] = useState('')
     const [toastStatus,setToastStatus] = useState('INFO')
-
+    const [documents,setDocuments] = useState<UserDocument[]>([])
     const onDocSelect = (d:UserDocument):void => {
         setToastNotification(false);
         setSelectedDoc(()=>d)
     }
+    const getDocuments = async (from = "")=>{
+        const res = await fetchUserDocuments(from);
+        const fetchedDocs = res.data.documents
+        setDocuments(fetchedDocs)
+    }    
+    useEffect(()=>{
+        (async () => {
+        await 
+        getDocuments('useEffect');
+        })()
+    },[])
     
     const onProcessDocument = async (id:string):Promise<void> => {
         const result = await processDocument(id);
         console.log(result)
         setToastNotification(false);
         if(result && result.success && result.data.documentId === id){
-            setToastLabel("Document Processing Done!")
-            setToastStatus('INFO')
+            setToastLabel("Document Upload Done! Processing it now");
+            setToastStatus('WARN');
             setToastNotification(true);
-            router.refresh()
+
+            await onProcessDocument(result.data.documentId);
+
+            await getDocuments('process success');
+
+            setUploadState(false);
         }else{
             setToastLabel("Error Processing the Document!Please try again later....")
             setToastStatus('ERROR')
@@ -49,7 +65,8 @@ export default function ChatWrapper({documents}:ChatWrapperProps) {
                 setToastLabel("Document Upload Done! Processing it now")
                 setToastStatus('WARN')
                 setToastNotification(true);
-                router.refresh();
+                // router.refresh();
+                getDocuments('upload success')
                 setUploadState(false)
                 onProcessDocument(results.data?.documentId)
             }else{
