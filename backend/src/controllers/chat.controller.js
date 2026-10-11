@@ -1,10 +1,21 @@
-const { json } = require("body-parser");
 const { chatHistory,processMessage, getAIAnswer } = require("../services/chat.service");
 const {success,failure} = require('../utils/response.utils')
+const {fetchDocumentById} = require('../services/documents.service')
 
 const sendMessage = async  (req, res) =>  {
   const message = processMessage(req.body);
   const {documentId} = req.body
+  const user = req?.user;
+  if(!user || !user?.id){
+    return failure(res,"No user found!",401)
+  }
+  if(!documentId){
+    return failure(res,"Document ID missing!",404)
+  }
+  const documentDetails = await fetchDocumentById(documentId,user.id)
+  if(!documentDetails?.success || !documentDetails?.document){
+    return failure(res,"Unauthorized Document Access",404)
+  }
   const data = await getAIAnswer(message,documentId);
   const answer = await data.answer
   const AnswerData = {
