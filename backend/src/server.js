@@ -13,7 +13,7 @@ const {
     FRONTEND_ENDPOINT,
     PORT
 } = require("./config/env");
-const { internalDocStatusUpdate } = require("./controllers/documents.controller");
+
 const { internalServiceMiddleware } = require("./middleware/internal-service.middleware");
 const { internalDocumentRouter } = require("./routes/internal-documents.routes");
 

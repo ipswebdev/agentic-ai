@@ -16,7 +16,7 @@ const authMiddleware = (req,res,next) => {
             next()
         }
         catch(err){
-            logger.error("Token error");
+            logger.error("Token error",err);
             return res.status(401).send('User not authorized to Access')
         }
         

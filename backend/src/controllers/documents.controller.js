@@ -116,7 +116,7 @@ const processDocument = async (req,res) => {
    console.log('processDocument pre try',id,req.user)
   try{
     const userDoc = await fetchDocumentById(id,req.user.id);
-  console.log('processDocument',id,req.user)
+  console.log('processDocument',id,req.user,userDoc)
   if(userDoc.success){
     if(userDoc.document.status === 'READY'){
       deleteDocumentFromDisk(userDoc.document.filePath)
@@ -127,7 +127,7 @@ const processDocument = async (req,res) => {
       console.log('Doc',id,userDoc.document.filePath)
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
       if(processedDoc?.documentId && processedDoc.success){
-        // deleteDocumentFromDisk(userDoc.document.filePath)
+        deleteDocumentFromDisk(userDoc.document.filePath)
         return success(res,{
                 documentId:processedDoc.documentId
                 },
@@ -135,7 +135,7 @@ const processDocument = async (req,res) => {
               )
       }else{
         logger.error('Error processing document',processedDoc?.message);
-        // deleteDocumentFromDisk(userDoc.document.filePath)
+        deleteDocumentFromDisk(userDoc.document.filePath)
         return failure(res,processedDoc?.message,500)
       }
     }

@@ -45,7 +45,7 @@ const deleteDocument = async (id,userId) => {
 
 const updateDocumentStatusbyId = async (id,status,userId) => {
     try{
-        const res = await Document.findOneAndUpdate({_id:id,userId:userId},{status:status},{new: true});
+        const res = await Document.findOneAndUpdate({_id:id,userId:userId},{status:status},{returnDocument: 'after'});
         return res;
     }catch(err){
         logger.error('Error updating document status',err);
@@ -54,9 +54,9 @@ const updateDocumentStatusbyId = async (id,status,userId) => {
     
 }
 
-const updateDocumentStatusInternally = async (id,status,userId) => {
+const updateDocumentStatusInternally = async (id,status) => {
     try{
-        const res = await Document.findOneAndUpdate({_id:id},{status:status},{new: true});
+        const res = await Document.findOneAndUpdate({_id:id},{status:status},{returnDocument: 'after'});
         return res;
     }catch(err){
         logger.error('Error updating document status',err);

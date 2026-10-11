@@ -8,9 +8,6 @@ import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
 import  { UserDocument } from "../../types/UserDocument"
 import { Message, Sender } from "@/app/types/ChatMessage";
-// interface ChatWrapperProps {
-//     documents: UserDocument[];
-// }
 
 export default function ChatWrapper() {
     const router = useRouter();
@@ -25,31 +22,26 @@ export default function ChatWrapper() {
         setToastNotification(false);
         setSelectedDoc(()=>d)
     }
-    const getDocuments = async (from = "")=>{
-        const res = await fetchUserDocuments(from);
+    const getDocuments = async ()=>{
+        const res = await fetchUserDocuments();
         const fetchedDocs = res.data.documents
         setDocuments(fetchedDocs)
     }    
     useEffect(()=>{
         (async () => {
         await 
-        getDocuments('useEffect');
+        getDocuments();
         })()
     },[])
     
     const onProcessDocument = async (id:string):Promise<void> => {
         const result = await processDocument(id);
-        console.log(result)
         setToastNotification(false);
         if(result && result.success && result.data.documentId === id){
             setToastLabel("Document Upload Done! Processing it now");
             setToastStatus('WARN');
             setToastNotification(true);
-
-            await onProcessDocument(result.data.documentId);
-
-            await getDocuments('process success');
-
+            await getDocuments();
             setUploadState(false);
         }else{
             setToastLabel("Error Processing the Document!Please try again later....")
@@ -65,7 +57,6 @@ export default function ChatWrapper() {
                 setToastLabel("Document Upload Done! Processing it now")
                 setToastStatus('WARN')
                 setToastNotification(true);
-                // router.refresh();
                 getDocuments('upload success')
                 setUploadState(false)
                 onProcessDocument(results.data?.documentId)
