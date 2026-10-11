@@ -3,7 +3,6 @@ const logger = require('../config/logger')
 
 const internalServiceMiddleware = (req,res,next) => {
     const internalKey = req.headers['x-internal-service-key'];
-    console.log(req.url,'--IKey--',internalKey)
     try{
             const internalSecret = INTERNAL_API_KEY;
             if(!internalKey || internalKey !== internalSecret){

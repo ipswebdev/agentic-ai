@@ -113,10 +113,8 @@ const deleteDocumentFromDisk = async function deleteFile(path) {
 
 const processDocument = async (req,res) => {
   const {id} = {...req.params};
-   console.log('processDocument pre try',id,req.user)
   try{
     const userDoc = await fetchDocumentById(id,req.user.id);
-  console.log('processDocument',id,req.user,userDoc)
   if(userDoc.success){
     if(userDoc.document.status === 'READY'){
       deleteDocumentFromDisk(userDoc.document.filePath)
@@ -124,7 +122,6 @@ const processDocument = async (req,res) => {
           "documentId": userDoc.document.id,
       },'Document already processsed!',200)
     }else{
-      console.log('Doc',id,userDoc.document.filePath)
       const processedDoc = await processDocumentData(id,userDoc.document.filePath)
       if(processedDoc?.documentId && processedDoc.success){
         deleteDocumentFromDisk(userDoc.document.filePath)
@@ -184,7 +181,6 @@ const getDocuments = async (req,res) => {
 const changeDocumentStatus = async (req,res) => {
   const {id} = {...req.params};
   const status = req.body.status;
-  console.log('changeDocumentStatus',req.user)
   try{
     const userDoc = await updateDocumentStatus(id,status,req.user.id);
     if(userDoc?.document){
