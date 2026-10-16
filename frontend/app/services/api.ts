@@ -1,11 +1,11 @@
 import { FetchDocumentsResponse,AnswerResponse } from "../types/UserDocument";
 
 import {
-    EXPRESS_API_URL,
+    NEXT_PUBLIC_EXPRESS_API_URL,
 } from "../config/env";
 import { get, post } from "./apiClient";
 
-const expressURL = EXPRESS_API_URL;
+const expressURL = NEXT_PUBLIC_EXPRESS_API_URL;
 
 
 export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
