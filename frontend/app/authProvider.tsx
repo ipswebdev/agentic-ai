@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { clearLocalStorage, getLocalStorage, setLocalStorage } from "./services/session.service";
 import { AuthContext, authDetails } from "./context/auth.context";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -8,7 +8,11 @@ import { authenticateUser } from "./services/api";
 import { useRouter } from "next/navigation";
 
 
-export default function AuthProvider({children}){
+export default function AuthProvider({
+    children,
+}: {
+    children: ReactNode;
+}){
     const [authStatus,setAuthStatus] = useState<authDetails["status"]>('checking') 
     const [userDetails,setUserDetails] = useState<authDetails['data']>(null) 
     const router = useRouter()
