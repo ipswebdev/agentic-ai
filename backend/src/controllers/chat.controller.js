@@ -20,6 +20,7 @@ const sendMessage = async  (req, res) =>  {
   const answer = await data.answer
   const AnswerData = {
     answer:answer,
+    matches:data.matches,
   }
   if(answer && data.success){
     return success(res,AnswerData,"Answer generated Successfully!",200)

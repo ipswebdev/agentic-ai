@@ -43,7 +43,8 @@ const getAIAnswer = async (message,documentId) => {
     if(data && data.answer && data.matches && data.matches.length){
       return  {
       success:true, 
-      answer:data.answer
+      answer:data.answer,
+      matches: data.matches
       }
     }else{
       return  {
