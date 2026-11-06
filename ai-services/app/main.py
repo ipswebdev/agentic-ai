@@ -257,10 +257,11 @@ def generate_answer(req: ChatRequest):
         docEmbeddings = getDocEmbeddings(req.documentId)
         qValues = questionEmbedding.embeddings[0].values
         cosineMatches = generateCosineSimilarity(qValues,docEmbeddings)
-        context = buildChatContext(cosineMatches[:3])
+        context = buildChatContext(cosineMatches[:5])
         answer  = get_answer(req.message, context)
         return JSONResponse(status_code=200,content={"success":True,"answer": answer,
-            "matches":  cosineMatches[:3]})
+            "matches":  cosineMatches[:5
+                                      ]})
     
     except AIModelUnavailableException as err:
         logger.exception("AI MODEL Error")
