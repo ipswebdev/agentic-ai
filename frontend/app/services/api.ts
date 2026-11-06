@@ -11,7 +11,7 @@ const expressURL = NEXT_PUBLIC_EXPRESS_API_URL;
 export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
     const url = `${expressURL}/documents`;
     const response = await get(url,{})
-    const data: FetchDocumentsResponse = await response.json()
+    const data: FetchDocumentsResponse = await response?.json()
     return data;
 }
 
