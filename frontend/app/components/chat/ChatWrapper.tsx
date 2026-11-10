@@ -24,7 +24,8 @@ export default function ChatWrapper() {
     }
     const getDocuments = async ()=>{
         const res = await fetchUserDocuments();
-        const fetchedDocs = res.data.documents
+        const fetchedDocs = res?.data?.documents?.length ?  res?.data?.documents?.length : [] ;
+
         setDocuments(fetchedDocs)
     }    
     useEffect(()=>{
