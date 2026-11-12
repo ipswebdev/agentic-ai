@@ -3,6 +3,7 @@ const {success,failure} = require('../utils/response.utils')
 const {fetchDocumentById} = require('../services/documents.service');
 const { fetchConversationThreadById } = require("../services/conversationThread.service");
 const { storeMessage } = require("../services/conversationMessage.service");
+const { updateThreadActivity } = require("../repositories/conversationThread.repository");
 
 const sendMessage = async  (req, res) =>  {
   const message = processMessage(req.body);
@@ -37,7 +38,7 @@ const sendMessage = async  (req, res) =>  {
     matches:data.matches,
   }
   if(answer && data.success){
-    const storedAnswer = await storeMessage(threadId,'assistant',answer,data?.matches?.length ? answer.data.matches : [])
+    const storedAnswer = await storeMessage(threadId,'assistant',answer,data?.matches?.length ? data.matches : [])
     await updateThreadActivity(threadId,user.id) 
     if (!storedAnswer.success) {
         return failure(res, "Unable to save assistant response", 500);
