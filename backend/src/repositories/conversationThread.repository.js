@@ -12,15 +12,23 @@ const createThread = async (threadData) => {
     }
 }
 
-const fetchThread = async (threadId,userId,documentId) => {
-    try{
-        const res = await ConversationThread.findOne({_id:threadId,userId:userId,documentId:documentId});
-        return res;
-    }catch(err){
-        logger.error('Error fetching thread',err);
+const fetchThread = async (threadId, userId, documentId = null) => {
+    try {
+        const query = {
+            _id: threadId,
+            userId: userId
+        };
+
+        if (documentId) {
+            query.documentId = documentId;
+        }
+
+        return await ConversationThread.findOne(query);
+    } catch (err) {
+        logger.error('Error fetching thread', err);
         throw new ThreadFetchException("Unable to fetch thread.");
     }
-}
+};
 
 const fetchAllThreads = async (userId,documentId) => {
     try{
