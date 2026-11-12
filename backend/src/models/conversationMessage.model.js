@@ -22,7 +22,7 @@ const conversationMessageSchema = new mongoose.Schema({
         score: {
             type: Number
         }
-    }],
+    }]|[],
 },
 {
 timestamps: true

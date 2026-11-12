@@ -52,11 +52,33 @@ const deleteThread = async (threadId,userId) => {
     }
 }
 
-
+const updateThreadActivity = async (threadId, userId) => {
+    try {
+        return await ConversationThread.findOneAndUpdate(
+            {
+                _id: threadId,
+                userId: userId
+            },
+            {
+                $set: {
+                    updatedAt: new Date()
+                }
+            },
+            {
+                new: true,
+                timestamps: false
+            }
+        );
+    } catch (err) {
+        logger.error('Error updating thread activity', err);
+        throw new ThreadUpdateException("Unable to update thread activity.");
+    }
+};
 
 module.exports = {
   createThread,
   fetchThread,
   fetchAllThreads,
   deleteThread,
+  updateThreadActivity
 };
