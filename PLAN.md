@@ -465,3 +465,223 @@ Activities:
 9. Keep security, authorization and tool validation outside the LLM's authority.
 
 **Primary outcome:** A demonstrable full-stack AI application with reliable RAG, conversational memory, controlled agent workflows, LangGraph orchestration, MCP integration, evaluation and production-oriented engineering practices.
+
+
+
+Day 1 — November 12: Finish Week 2
+Models, repositories and smoke tests complete
+Goal: A user can create multiple conversations for a document, retrieve them, and access only their own conversations.
+Time	Task	Expected outcome
+1 hr	Document ownership and thread service	Service validates document ownership and READY status
+1 hr	Message service	Verify thread ownership before message operations
+1 hr	Thread/message controllers and routes	API endpoints working
+1 hr	API testing	Test authorized and unauthorized requests
+1–2 hrs	Frontend integration	Create/list conversations and load messages
+
+Endpoints to target:
+POST   /documents/:documentId/threads
+GET    /documents/:documentId/threads
+GET    /threads/:threadId/messages
+DELETE /threads/:threadId
+
+
+We can add a message endpoint when we connect Week 3.
+
+Definition of done:
+- Multiple threads per document.
+- Thread ownership enforced.
+- Messages retrieved in chronological order.
+- Thread deletion removes associated messages.
+- Basic frontend conversation selection.
+Don't spend time redesigning the UI. Functional is enough.
+Day 2 — November 13: Finish Week 3
+Goal: Convert the existing single-question RAG implementation into a conversational RAG system.
+
+This is a particularly important step because it introduces the distinction between conversation state and retrieval context.
+Time	Task	Expected outcome
+1 hr	Understand conversation context	Original question vs latest question vs conversation history
+1.5 hrs	Persist messages	User and assistant messages saved
+1 hr	Fetch recent history	Bounded history passed to AI service
+1 hr	Follow-up query handling	Resolve references such as "What about the second point?"
+1–1.5 hrs	Testing	Multi-turn conversations tested end to end
+
+The conceptual request flow should become:
+User question
+
+Express API
+
+Authenticate user · Validate thread ownership
+
+Load conversation history
+
+Recent messages · Current question
+
+FastAPI RAG service
+
+Query resolution · Embedding · Retrieval · Generation
+
+Persist assistant response and evidence
+
+
+Important concepts to understand:
+- Conversation history is not the same as retrieved document context.
+- The latest question may depend on previous messages.
+- We should not send unlimited history to the LLM.
+- The original question, resolved question, conversation history, and retrieved evidence should remain distinguishable.
+Definition of done: You can ask a question, ask a follow-up, refresh the application, reopen the thread, and continue the conversation.
+Day 3 — November 14: Week 4 + Week 5
+This is our most conceptually dense day.
+Part A — Week 4: RAG quality (1.5–2 hours)
+We will deliberately reduce the scope of this week.
+
+Do only:
+- Attach source metadata to retrieved chunks.
+- Return chunk references/evidence with generated responses.
+- Make the LLM distinguish supported answers from unsupported claims.
+- Run a small evaluation set against the existing baseline.
+Defer:
+- Structured PDF extraction.
+- Advanced chunking.
+- Large-scale evaluation.
+- Sophisticated reranking.
+These can be revisited later without blocking agent development.
+Part B — Week 5: Agent fundamentals and Google ADK (4–4.5 hours)
+We need to understand what makes an agent different from a normal LLM call.
+
+Cover these concepts:
+1. LLM with tools versus an agent.
+2. Tool definitions and input schemas.
+3. Tool selection and execution.
+4. Tool responses and subsequent reasoning.
+5. Agent instructions and constraints.
+6. Controlled tool access and failure handling.
+Then build a small Python Google ADK agent.
+Our first agent
+Document Assistant Agent
+
+Search document
+
+Controlled search tool
+
+
+Get document details
+
+Controlled metadata tool
+
+
+
+Generate a grounded response
+
+
+Use Python ADK and a small, controlled document tool. We do not need to migrate the existing application to ADK.
+
+Definition of done: An ADK agent can receive a question, decide to call a document tool, use its result, and produce an answer.
+Day 4 — November 15: Week 6 — Agent workflows
+Goal: Move from a single tool-using agent to a workflow involving multiple steps and state.
+
+Concepts to cover:
+Concept	What you should understand
+Agent state	Information retained across workflow steps
+Sequential workflow	Steps executed in a defined order
+Routing	Select a path based on the input
+Parallel execution	Independent tasks executed concurrently
+Delegation	A parent agent delegates work to another agent
+Session state	State maintained across interactions
+
+Build this workflow:
+User request
+
+Request classification
+
+Document Q&A
+
+Search document → Answer
+
+
+Document summary
+
+Retrieve content → Summarize
+
+
+
+Final response
+
+
+Implement using ADK workflow primitives. Try sequential execution and routing first. If time permits, add a second agent to handle a specialized task.
+
+Definition of done:
+- Workflow has multiple steps.
+- It maintains state.
+- It routes requests to different execution paths.
+- You can explain how it differs from a single LLM call and a single tool-using agent.
+
+What we are deliberately postponing
+To protect the four-day target, these are not sprint blockers:
+Topic	Decision
+Advanced PDF extraction and chunking	Postpone
+RAG reranking and advanced retrieval	Postpone
+Streaming responses	Postpone
+Advanced ADK delegation	Optional
+LangGraph implementation	Next phase, Week 7
+MCP implementation	Week 9
+Production observability	Later phase
+
+We are not abandoning these topics. We are moving them out of the critical path.
+Rules for the sprint
+I want to establish a few rules so that we actually get through this.
+1. Time-box problems. If something takes more than 30 minutes to debug, isolate it and move on if it isn't blocking the next deliverable.
+2. No unnecessary refactoring. Existing architecture stays as it is unless something genuinely prevents progress.
+3. One working implementation per major concept. We don't need production-grade implementations of every pattern.
+4. Understand before implementing. We'll still discuss design decisions, but keep explanations focused on the current task.
+5. Every day ends with a working checkpoint. Commit the code and record what you learned.
+Sprint tracker
+Execution progress
+0/20
+
+
+
+Nov 12 · Week 2 — Persistent conversations
+[ ] Thread and message services
+[ ] Ownership and document status validation
+[ ] API routes and controllers
+[ ] Thread deletion with message cleanup
+[ ] Basic frontend integration
+
+
+Nov 13 · Week 3 — Multi-turn RAG
+[ ] Persist user and assistant messages
+[ ] Load bounded conversation history
+[ ] Resolve follow-up questions
+[ ] Pass history to FastAPI
+[ ] Test multi-turn conversation after refresh
+
+
+Nov 14 · Weeks 4–5 — Grounding and ADK
+[ ] Basic source attribution and evaluation
+[ ] Understand agent/tool-calling loop
+[ ] Learn ADK agent and tool definitions
+[ ] Build controlled document search tool
+[ ] Run a working ADK agent
+
+
+Nov 15 · Week 6 — Stateful workflows
+[ ] Understand agent state and sessions
+[ ] Build sequential workflow
+[ ] Build request routing
+[ ] Test multiple execution paths
+[ ] Document ADK concepts and implementation
+
+
+
+Let's start today
+You have already completed the Week 2 models, repositories, indexes, and repository tests. We should not revisit those.
+
+Our first task today is the service layer.
+
+Share your current:
+- Document repository.
+- Thread/message service files, if already created.
+- Existing document controller/service structure.
+We'll inspect the actual code, agree on the service responsibilities, and implement the first piece. No rewriting the architecture.
+
+One final point: I am treating November 15 as the deadline for breadth and working prototypes, not production completeness. By the end of Sunday, you should have touched persistent conversational RAG, Google ADK, tool calling, state, and workflow orchestration. That's the outcome worth optimizing for.

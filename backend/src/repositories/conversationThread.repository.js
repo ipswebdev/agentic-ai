@@ -12,9 +12,9 @@ const createThread = async (threadData) => {
     }
 }
 
-const fetchThread = async (threadId,userId) => {
+const fetchThread = async (threadId,userId,documentId) => {
     try{
-        const res = await ConversationThread.findOne({_id:threadId,userId:userId});
+        const res = await ConversationThread.findOne({_id:threadId,userId:userId,documentId:documentId});
         return res;
     }catch(err){
         logger.error('Error fetching thread',err);
@@ -25,8 +25,8 @@ const fetchThread = async (threadId,userId) => {
 const fetchAllThreads = async (userId,documentId) => {
     try{
         const res = await ConversationThread.find({userId:userId,documentId:documentId}).sort({
-    updatedAt: -1
-});
+            updatedAt: -1
+        });
         return res; 
     }catch(err){
         logger.error('Error fetching threads',err);

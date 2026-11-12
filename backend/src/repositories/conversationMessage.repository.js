@@ -32,15 +32,17 @@ const fetchAllMessages = async (threadId) => {
     } 
 }
 
-const deleteMessage = async (id,threadId) => {
-    try{
-        const res = await ConversationMessage.findOneAndDelete({_id:id,threadId:threadId});
+const deleteMessagesByThreadId = async (threadId) => {
+    try {
+        const res = await ConversationMessage.deleteMany({
+            threadId: threadId
+        });
         return res;
-    }catch(err){
-        logger.error('Error Deleting message',err);
-        throw new MessageDeleteException("Unable to Delete message.");
+    } catch (err) {
+        logger.error('Error deleting messages', err);
+        throw new MessageDeleteException("Unable to delete messages.");
     }
-}
+};
 
 
 
@@ -49,5 +51,5 @@ module.exports = {
   createMessage,
   fetchMessage,
   fetchAllMessages,
-  deleteMessage,
+  deleteMessagesByThreadId,
 };
