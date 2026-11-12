@@ -17,9 +17,6 @@ const {
 const { internalServiceMiddleware } = require("./middleware/internal-service.middleware");
 const { internalDocumentRouter } = require("./routes/internal-documents.routes");
 
-const {ConversationThread} = require('./models/conversationThread.model')
-const {ConversationMessage } = require('./models/conversationMessage.model')
-
 const app = express();
 
 const frontendEndpoint = FRONTEND_ENDPOINT;
@@ -42,6 +39,7 @@ connectDb()
 }).catch((err)=>{
   logger.error(err);
 })
+app.use('/auth',authRouter);
 
 app.get('/health', (req, res) => {
   res.json({
