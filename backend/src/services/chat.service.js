@@ -2,21 +2,11 @@ const {
     FAST_API_URL,
 } = require("../config/env");
 const {success,failure} = require('../utils/response.utils')
-const chatHistory = [
-  {
-    id: 1,
-    message: 'Hello'
-  },
-  {
-    id: 2,
-    message: 'What is RAG?'
-  }
-]
 
 const processMessage = ({
    message,
 }) => {
-    const extractedMessage = message ? message : "No Message";
+    const extractedMessage = message?.trim() ? message : "No Message";
     return extractedMessage;
 }
 
@@ -63,7 +53,6 @@ const getAIAnswer = async (message,documentId) => {
 }
 
 module.exports = {
-    chatHistory,
     processMessage,
     getAIAnswer
 }

@@ -1,4 +1,4 @@
-const { chatHistory,processMessage, getAIAnswer } = require("../services/chat.service");
+const { processMessage, getAIAnswer } = require("../services/chat.service");
 const {success,failure} = require('../utils/response.utils')
 
 const { fetchConversationThreadById } = require("../services/conversationThread.service");
@@ -57,16 +57,10 @@ const sendMessage = async  (req, res) =>  {
   return failure(res,"Error generating response",400)
 }
 
-const getChatHistory = (req,res) => {
-    res.json({
-    hisoty: chatHistory,
-  });
-}
 const getChatDetail = (req,res) => {
 }
 
 module.exports = {
-  getChatHistory,
   sendMessage,
   getChatDetail
 }

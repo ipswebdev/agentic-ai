@@ -73,7 +73,10 @@ const getConversationThreads = async (userId) => {
                 t=>{
                     return {
                         id:t._id.toString(),
-                        documentId:t.documentId,
+                        document: {
+                            id: t.documentId._id.toString(),
+                            fileName: t.documentId.fileName
+                        },
                         userId:t.userId,
                         title:t.title
                     }

@@ -13,8 +13,9 @@ const storeMessage = async (threadId,role,content,evidence=[]) => {
         id:createdMessage._id.toString(),
         evidence:createdMessage.evidence,
         role:createdMessage.role,
-        threadId:createdMessage.threadId,
-        content:createdMessage.content
+        threadId:createdMessage.threadId.toString(),
+        content:createdMessage.content,
+        createdAt:createdMessage.createdAt
     }
     return {
         success:true,
@@ -23,7 +24,6 @@ const storeMessage = async (threadId,role,content,evidence=[]) => {
 }
 
 const fetchMessages = async (threadId) => {
-    
     const fetchedMessages = await fetchAllMessages(threadId)
     if(!fetchedMessages){
         return {

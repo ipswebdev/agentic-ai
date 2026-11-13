@@ -27,7 +27,7 @@ const fetchThread = async (threadId, userId) => {
 
 const fetchAllThreads = async (userId) => {
     try{
-        const res = await ConversationThread.find({userId:userId}).populate("documentId").sort({
+        const res = await ConversationThread.find({userId:userId}).populate("documentId", "fileName").sort({
             updatedAt: -1
         });
         return res; 

@@ -92,7 +92,7 @@ const getAllThreadMessages = async (req,res) => {
     const threadDoc = await fetchConversationThreadById(id,req.user.id);
     if(threadDoc && threadDoc?.success && threadDoc?.data?.id){
       const messageRes = await fetchMessages(threadDoc.data.id)
-      if(!messageRes){
+      if(!messageRes?.success){
         return  failure(res,'No messages found',404)
       }
       const d = messageRes.data
