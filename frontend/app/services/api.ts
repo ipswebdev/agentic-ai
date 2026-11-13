@@ -11,7 +11,9 @@ const expressURL = NEXT_PUBLIC_EXPRESS_API_URL;
 
 
 export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
+    
     const url = `${expressURL}/documents`;
+    console.log('url',url)
     const response = await get(url,{})
     if (!response) {
         return {
@@ -95,7 +97,7 @@ export const createConversationThread = async (
     {
       "Content-Type": "application/json"
     },
-    JSON.stringify({ documentId })
+    JSON.stringify({ documentId,title:''+ (new Date()).toISOString() })
   );
 
   if (!response) {

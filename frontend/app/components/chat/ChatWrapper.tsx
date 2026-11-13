@@ -3,35 +3,59 @@ import { useEffect, useState } from "react";
 import ChatWindow from "./ChatWindow";
 import DocumentSidebar from "./DocumentSidebar";
 import SelectedDocument from "./SelectedDocument";
-import { askQuestion,fetchUserDocuments,processDocument,uploadDocument } from "@/app/services/api";
+import { askQuestion,createConversationThread,fetchConversationThreads,fetchUserDocuments,processDocument,uploadDocument } from "@/app/services/api";
 import Toast from "../common/Toast";
 import { useRouter } from "next/navigation";
 import  { UserDocument } from "../../types/UserDocument"
 import { Message, Sender } from "@/app/types/ChatMessage";
+import { ConversationThread } from "@/app/types/ConversationThread";
 
 export default function ChatWrapper() {
     const router = useRouter();
     const [selectedDoc , setSelectedDoc] = useState<UserDocument|null>(null)
+    const [selectedThread , setSelectedThread] = useState<UserDocument|null>(null)
     const [uploadInProgress , setUploadState] = useState(false)
     const [loading , setLoader] = useState(false)
     const [showToastNotification,setToastNotification] = useState(false);
     const [toastLabel,setToastLabel] = useState('')
     const [toastStatus,setToastStatus] = useState('INFO')
     const [documents,setDocuments] = useState<UserDocument[]>([])
+    const [threads,setThreads] = useState<ConversationThread[]>([])
     const onDocSelect = (d:UserDocument):void => {
         setToastNotification(false);
         setSelectedDoc(()=>d)
+        console.log(selectedDoc)
+        createNewThread();
+    }
+    const createNewThread = async () => {
+        if(selectedDoc && selectedDoc.id){
+            const createRes = await createConversationThread(selectedDoc?.id)
+            console.log('createNewThread',createRes)
+        }
+        
+    }
+    const onThreadSelect = (d:ConversationThread):void => {
+        setToastNotification(false);
+        setSelectedThread(()=>d)
     }
     const getDocuments = async ()=>{
         const res = await fetchUserDocuments();
         const fetchedDocs = res?.data?.documents?.length ?  res.data.documents : [] ;
 
         setDocuments(fetchedDocs)
+    } 
+    const getThreads = async ()=>{
+        const res = await fetchConversationThreads();
+        const fetchedDocs = res?.data?.threads?.length ?  res.data.threads : [] ;
+        console.log('getThreads',fetchedDocs)
+        setThreads(fetchedDocs)
     }    
     useEffect(()=>{
         (async () => {
         await 
         getDocuments();
+        await 
+        getThreads()
         })()
     },[])
     
