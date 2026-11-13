@@ -1,3 +1,5 @@
+import { Evidence, ConversationMessage } from "./ChatMessage";
+
 export enum DocumentStatus{
     UPLOADED='UPLOADED',
     FAILED='FAILED',
@@ -13,18 +15,27 @@ export interface UserDocument  {
     createdAt:string,
     updatedAt:string
 }
+
 export interface FetchDocumentsResponse {
     success: boolean;
     data:{
         documents: UserDocument[]
-    }
+    }|null
 
 }
 
+export interface RetrievalMatch {
+  text: string;
+  chunkId: string;
+  score: number;
+}
+
 export interface AnswerResponse {
-    data:{
-        answer: string;
-    };
-    message:string;
-    success:boolean;
+  success: boolean;
+  message: string;
+  data: {
+    answer: string;
+    matches: RetrievalMatch[];
+    message: ConversationMessage;
+  } | null;
 }
