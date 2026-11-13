@@ -44,7 +44,7 @@ const createConversationThread = async (userId,documentId,title) => {
             return {
                 success:true,
                 message:'Thread Successfully created',
-                data:{
+                thread:{
                     id: thread._id,
                     documentId: thread.documentId,
                     userId: thread.userId,
@@ -58,16 +58,9 @@ const createConversationThread = async (userId,documentId,title) => {
     }
 }
 
-const getConversationThreads = async (userId,documentId) => {
+const getConversationThreads = async (userId) => {
     try{
-        const documentRes = await validateDocumentOwnership(userId,documentId);
-        if (!documentRes.success) {
-            return {
-                success: false,
-                message: "Document not found."
-            };
-        }
-        const threadsRes = await fetchAllThreads(userId,documentId)
+        const threadsRes = await fetchAllThreads(userId)
         if(!threadsRes || !threadsRes.length){
             return {
                 success: true,
@@ -85,21 +78,22 @@ const getConversationThreads = async (userId,documentId) => {
     
 }
 
-const fetchConversationThreadById = async (userId,documentId,threadId) => {
-    const documentRes = await validateDocumentOwnership(userId,documentId);
-    if (!documentRes.success) {
-        return {
-            success: false,
-            message: "Document not found."
-        };
-    }
+const fetchConversationThreadById = async (threadId,userId) => {
 
-    const threadById = await fetchThread(threadId,userId,documentId);
+
+    const threadById = await fetchThread(threadId,userId);
     if(!threadById){
         return {
             success:false,
             message:"Thread not found"       
         }
+    }
+    const documentRes = await validateDocumentOwnership(userId,threadById.documentId);
+    if (!documentRes.success) {
+        return {
+            success: false,
+            message: "Document linked to the thread found."
+        };
     }
     return{
         success:true,
@@ -121,16 +115,12 @@ const deleteConversationThread = async (threadId, userId) => {
         await deleteMessagesByThreadId(threadId);
         const deletedThread = await deleteThread(threadId, userId);
 
-
         if (!deletedThread) {
             return {
                 success: false,
                 message: "Unable to delete conversation thread."
             };
         }
-
-        
-
         return {
             success: true,
             thread: deletedThread

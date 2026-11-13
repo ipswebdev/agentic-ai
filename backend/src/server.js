@@ -51,6 +51,7 @@ app.get('/health', (req, res) => {
 app.use('/internal',internalServiceMiddleware,internalDocumentRouter);
 app.use(authMiddleware)
 app.use('/chat',chatRouter);
+app.use('/threads',documentRouter);
 app.use('/documents',documentRouter);
 
 

@@ -1,6 +1,6 @@
 const { ConversationThread } = require('../models/conversationThread.model')
 const {logger} = require('../config/logger')
-const {ThreadSaveException,ThreadDeleteException,ThreadFetchException} = require('../exceptions/repository.exception')
+const {ThreadSaveException,ThreadDeleteException,ThreadFetchException,ThreadUpdateException} = require('../exceptions/repository.exception')
 
 const createThread = async (threadData) => {
     try{
@@ -12,17 +12,12 @@ const createThread = async (threadData) => {
     }
 }
 
-const fetchThread = async (threadId, userId, documentId = null) => {
+const fetchThread = async (threadId, userId) => {
     try {
         const query = {
             _id: threadId,
             userId: userId
         };
-
-        if (documentId) {
-            query.documentId = documentId;
-        }
-
         return await ConversationThread.findOne(query);
     } catch (err) {
         logger.error('Error fetching thread', err);
@@ -30,9 +25,9 @@ const fetchThread = async (threadId, userId, documentId = null) => {
     }
 };
 
-const fetchAllThreads = async (userId,documentId) => {
+const fetchAllThreads = async (userId) => {
     try{
-        const res = await ConversationThread.find({userId:userId,documentId:documentId}).sort({
+        const res = await ConversationThread.find({userId:userId}).sort({
             updatedAt: -1
         });
         return res; 

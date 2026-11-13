@@ -1,4 +1,4 @@
-const { createMessage, fetchAllMessages } = require("../repositories/conversationMessage.repository");
+const { createMessage, fetchAllMessages, deleteMessagesByThreadId } = require("../repositories/conversationMessage.repository");
 
 const storeMessage = async (threadId,role,content,evidence=[]) => {
     
@@ -38,8 +38,24 @@ const fetchMessages = async (threadId) => {
     }
 }
 
+const deleteMessagesforThread = async (threadId) => {
+    
+    const deletedMessages = await deleteMessagesByThreadId(threadId)
+    if(!deletedMessages){
+        return {
+            success:false,
+            message:'Error Fetching message'
+        }
+    }
+    return {
+        success:true,
+        data:deletedMessages
+    }
+}
+
 
 module.exports = {
     storeMessage,
-    fetchMessages
+    fetchMessages,
+    deleteMessagesforThread
 }

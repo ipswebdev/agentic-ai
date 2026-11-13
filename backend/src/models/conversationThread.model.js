@@ -22,7 +22,6 @@ timestamps: true
 
 conversationThreadSchema.index({
     userId: 1,
-    documentId: 1,
     updatedAt: -1
 });
 

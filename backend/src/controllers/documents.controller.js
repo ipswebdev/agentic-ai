@@ -24,7 +24,6 @@ const uploadDocument = async  (req, res) =>  {
       return failure(res,`File should be a pdf`,415)
   }
   try{
-    
     const data = await processDocumentUpload({file:req.file,userId:req.user.id});
     return success(res,data,'Upload Successful!',200)
   }catch(err){
@@ -151,8 +150,6 @@ const processDocument = async (req,res) => {
     return failure(res,'Error processing document',500)
   }
 }
-
-
 
 const getDocuments = async (req,res) => {
   try{
