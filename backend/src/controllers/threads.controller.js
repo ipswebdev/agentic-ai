@@ -3,8 +3,7 @@ const {success,failure} = require("../utils/response.utils")
 const { DocumentFetchException,DocumentUpdateException,DocumentSaveException, ThreadFetchException, ThreadSaveException} = require("../exceptions/repository.exception");
 const {logger} = require("../config/logger");
 const { getConversationThreads, createConversationThread, fetchConversationThreadById, deleteConversationThread } = require("../services/conversationThread.service");
-const { fetchAllMessages, deleteMessagesByThreadId } = require("../repositories/conversationMessage.repository");
-const { deleteMessagesforThread } = require("../services/conversationMessage.service");
+const { fetchMessages } = require("../services/conversationMessage.service");
 
 
 
@@ -32,10 +31,7 @@ const createNewThread = async (req,res) => {
   const {documentId} = req.body
   const {title} = req.body
   if(!documentId?.trim()){
-    return  failure(res,'No document found',404)
-  }
-  if(!title?.trim()){
-    return  failure(res,'No Title found',404)
+    return  failure(res,'No document found',400)
   }
   try{
     const userThread = await createConversationThread(req.user.id,documentId,title);
@@ -60,17 +56,12 @@ const deleteThread =async (req, res) => {
 
   try {
     const deletedThread = await deleteConversationThread(id, req.user.id)
-    const deletedMessages = await deleteMessagesforThread(id)
     if (!deletedThread.success) {
-      return failure(res, 'Could not delete document from DB', 500);
+      return failure(res, 'Could not delete Thread from DB', 500);
     }
-    if (!deletedMessages.success) {
-      return failure(res, 'Could not delete messages for the thread from DB', 500);
-    }
-    
       return success(
         res,
-        deletedThread,
+        deletedThread.thread,
         'Successfully Deleted Thread',
         200
       );
@@ -83,18 +74,8 @@ const deleteThread =async (req, res) => {
 const getAllThreads = async (req,res) => {
   try{
     const userThreads = await getConversationThreads(req.user.id);
-    const threads = userThreads.threads.map(d=>{
-      return{
-        id:d._id,
-        userId:d.userId,
-        documentId: d.documentId,
-        title: d.title,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt
-      }
-    })
     return success(res,{
-      "threads":threads
+      threads:userThreads.threads
     },'Fetched Threads successfully',200);
   }catch(err){
     logger.error('Error fetching Threads',err);
@@ -104,13 +85,17 @@ const getAllThreads = async (req,res) => {
 
 const getAllThreadMessages = async (req,res) => {
   try{
+    const {id} = req.params
+    if(!id?.trim()){
+      return  failure(res,'No threadID found',400)
+    }
     const threadDoc = await fetchConversationThreadById(id,req.user.id);
     if(threadDoc && threadDoc?.success && threadDoc?.data?.id){
-      const messageRes = await fetchAllMessages(threadDoc.data.id)
+      const messageRes = await fetchMessages(threadDoc.data.id)
       if(!messageRes){
         return  failure(res,'No messages found',404)
       }
-      const d = messageRes
+      const d = messageRes.data
       return success(res,d,'Successfully fetched messages',200)
     }else{
       return  failure(res,'No messages found',404)

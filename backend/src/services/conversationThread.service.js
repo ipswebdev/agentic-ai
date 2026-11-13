@@ -40,12 +40,12 @@ const createConversationThread = async (userId,documentId,title) => {
             };
         }
         const thread = await createThread({userId:userId,documentId:documentId,title:title?.trim() || 'New Conversation'})
-        if(thread && thread?._id){
+        if(thread && thread?._id.toString()){
             return {
                 success:true,
                 message:'Thread Successfully created',
                 thread:{
-                    id: thread._id,
+                    id: thread._id.toString(),
                     documentId: thread.documentId,
                     userId: thread.userId,
                     title: thread.title
@@ -69,7 +69,16 @@ const getConversationThreads = async (userId) => {
         }
         return {
             success: true,
-            threads: threadsRes
+            threads: threadsRes.map(
+                t=>{
+                    return {
+                        id:t._id.toString(),
+                        documentId:t.documentId,
+                        userId:t.userId,
+                        title:t.title
+                    }
+                }
+            )
         };
     }catch(err){
         logger.error('error fetching all threads',err)
@@ -79,8 +88,6 @@ const getConversationThreads = async (userId) => {
 }
 
 const fetchConversationThreadById = async (threadId,userId) => {
-
-
     const threadById = await fetchThread(threadId,userId);
     if(!threadById){
         return {
@@ -95,9 +102,15 @@ const fetchConversationThreadById = async (threadId,userId) => {
             message: "Document linked to the thread found."
         };
     }
+    const modifiedThreadById = {
+        id:threadById._id.toString(),
+        title:threadById.title,
+        documentId:threadById.documentId,
+        userId:threadById.userId,
+    }
     return{
         success:true,
-        data:threadById
+        data:modifiedThreadById
     }
 } 
 const deleteConversationThread = async (threadId, userId) => {
@@ -112,18 +125,27 @@ const deleteConversationThread = async (threadId, userId) => {
             };
         }
         // Delete associated messages.
-        await deleteMessagesByThreadId(threadId);
         const deletedThread = await deleteThread(threadId, userId);
-
+        const deletedMessages = await deleteMessagesByThreadId(threadId);
         if (!deletedThread) {
             return {
                 success: false,
                 message: "Unable to delete conversation thread."
             };
         }
+        if (!deletedMessages) {
+            return {
+                success: false,
+                message: "Could not delete messages for the thread from D"
+            };
+        }
         return {
             success: true,
-            thread: deletedThread
+            thread: {id:deletedThread._id.toString()
+                ,documentId:deletedThread.documentId,
+                userId:deletedThread.userId,
+                title:deletedThread.title
+            }
         };
 
     } catch (err) {

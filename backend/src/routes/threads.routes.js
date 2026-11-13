@@ -6,9 +6,9 @@ const threadRouter = express.Router();
 
 threadRouter.get('/:id',getThread)
 threadRouter.delete('/:id',deleteThread)
-threadRouter.delete('/:id/messages',getAllThreadMessages)
+threadRouter.get('/:id/messages',getAllThreadMessages)
 threadRouter.get('/',getAllThreads)
-threadRouter.post('/new',createNewThread)
+threadRouter.post('/',createNewThread)
 
 
 module.exports = {

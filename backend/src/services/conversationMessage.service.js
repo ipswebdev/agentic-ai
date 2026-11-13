@@ -9,9 +9,16 @@ const storeMessage = async (threadId,role,content,evidence=[]) => {
             message:'Error Saving message'
         }
     }
+    const modifiedMessage = {
+        id:createdMessage._id.toString(),
+        evidence:createdMessage.evidence,
+        role:createdMessage.role,
+        threadId:createdMessage.threadId,
+        content:createdMessage.content
+    }
     return {
         success:true,
-        data:createdMessage
+        data:modifiedMessage
     }
 }
 
@@ -24,16 +31,25 @@ const fetchMessages = async (threadId) => {
             message:'Error Fetching message'
         }
     }
-    return {
-        success:true,
-        data:{
-            messages : fetchedMessages.map(m=>({
+    if(!fetchedMessages.length){
+        return {
+            success:true,
+            data:{
+            messages : []
+        }
+        }
+    }
+    const modifiedfetchedMessages = fetchedMessages.map(m=>({
                 id: m._id.toString(),
                 role: m.role,
                 content: m.content,
                 evidence: m.evidence,
                 createdAt: m.createdAt
             }))
+    return {
+        success:true,
+        data:{
+            messages : modifiedfetchedMessages
         }
     }
 }

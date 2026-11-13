@@ -42,9 +42,13 @@ const sendMessage = async  (req, res) =>  {
   }
 
   if(answer && data.success){
-    const storedAnswer = await storeMessage(threadId,'assistant',answer,data?.matches?.length ? data.matches : [])
+    const evidence = data?.matches?.length ? data.matches : []
+    const storedAnswer = await storeMessage(threadId,'assistant',answer,evidence)
     if(storedAnswer.success){
-      await updateThreadActivity(threadId,user.id) 
+      const updatedThreadActivity = await updateThreadActivity(threadId,user.id) 
+      if(!updatedThreadActivity){
+        return failure(res, "Unable to update thread", 400);
+      }
     }else{
       return failure(res, "Unable to save assistant response", 500);
     }

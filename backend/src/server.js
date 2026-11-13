@@ -16,6 +16,7 @@ const {
 
 const { internalServiceMiddleware } = require("./middleware/internal-service.middleware");
 const { internalDocumentRouter } = require("./routes/internal-documents.routes");
+const { threadRouter } = require("./routes/threads.routes");
 
 const app = express();
 
@@ -51,7 +52,7 @@ app.get('/health', (req, res) => {
 app.use('/internal',internalServiceMiddleware,internalDocumentRouter);
 app.use(authMiddleware)
 app.use('/chat',chatRouter);
-app.use('/threads',documentRouter);
+app.use('/threads',threadRouter);
 app.use('/documents',documentRouter);
 
 
