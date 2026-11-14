@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -7,43 +6,48 @@ import Button from "../common/Button";
 
 interface NewChatProps {
     documents: UserDocument[];
-    onCreateThread: (document: UserDocument) => void;
-    creatingThread?: boolean;
+    onCreateThread: (document: UserDocument) => Promise<boolean>;
+    creatingThread: boolean;
 }
 
 export default function NewChat({
     documents,
     onCreateThread,
-    creatingThread = false,
+    creatingThread,
 }: NewChatProps) {
-
     const [showDialog, setShowDialog] = useState(false);
     const [selectedDocumentId, setSelectedDocumentId] = useState("");
 
     const readyDocuments = documents.filter(
-        document => document.status === "READY"
+        (document) => document.status === "READY"
     );
 
-    const handleStartConversation = () => {
-        if (!selectedDocumentId) {
+    const handleClose = () => {
+        if (creatingThread) return;
+
+        setShowDialog(false);
+        setSelectedDocumentId("");
+    };
+
+    const handleStartConversation = async () => {
+        if (!selectedDocumentId || creatingThread) {
             return;
         }
 
         const selectedDocument = readyDocuments.find(
-            document => document.id === selectedDocumentId
+            (document) => document.id === selectedDocumentId
         );
 
         if (!selectedDocument) {
             return;
         }
 
-        onCreateThread(selectedDocument);
-        handleClose();
-    };
+        const created = await onCreateThread(selectedDocument);
 
-    const handleClose = () => {
-        setShowDialog(false);
-        setSelectedDocumentId("");
+        if (created) {
+            setShowDialog(false);
+            setSelectedDocumentId("");
+        }
     };
 
     return (
@@ -54,6 +58,7 @@ export default function NewChat({
 
             <Button
                 label="New Chat"
+                isDisabled={creatingThread}
                 onUserClick={() => setShowDialog(true)}
             />
 
@@ -83,16 +88,17 @@ export default function NewChat({
                                     Upload and process a document first.
                                 </p>
                             ) : (
-                                readyDocuments.map(document => (
+                                readyDocuments.map((document) => (
                                     <label
                                         key={document.id}
                                         className={`
                                             mb-2 flex cursor-pointer
                                             items-center gap-3 rounded-lg
                                             border p-3 transition-colors
-                                            ${selectedDocumentId === document.id
-                                                ? "border-blue-500 bg-blue-500/10"
-                                                : "border-zinc-700 hover:bg-zinc-800"
+                                            ${
+                                                selectedDocumentId === document.id
+                                                    ? "border-blue-500 bg-blue-500/10"
+                                                    : "border-zinc-700 hover:bg-zinc-800"
                                             }
                                         `}
                                     >
@@ -100,7 +106,9 @@ export default function NewChat({
                                             type="radio"
                                             name="selectedDocument"
                                             value={document.id}
-                                            checked={selectedDocumentId === document.id}
+                                            checked={
+                                                selectedDocumentId === document.id
+                                            }
                                             onChange={() =>
                                                 setSelectedDocumentId(document.id)
                                             }
@@ -117,12 +125,19 @@ export default function NewChat({
                         <div className="mt-6 flex justify-end gap-3">
                             <Button
                                 label="Cancel"
+                                isDisabled={creatingThread}
                                 onUserClick={handleClose}
                             />
 
                             <Button
-                                label={creatingThread ? "Creating..." : "Start Conversation"}
-                                isDisabled={!selectedDocumentId || creatingThread}
+                                label={
+                                    creatingThread
+                                        ? "Creating..."
+                                        : "Start Conversation"
+                                }
+                                isDisabled={
+                                    !selectedDocumentId || creatingThread
+                                }
                                 onUserClick={handleStartConversation}
                             />
                         </div>

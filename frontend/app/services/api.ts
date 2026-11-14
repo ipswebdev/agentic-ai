@@ -4,8 +4,11 @@ import {
     NEXT_PUBLIC_EXPRESS_API_URL,
 } from "../config/env";
 import { deleteReq, get, post } from "./apiClient";
-import { CreateConversationThreadResponse, DeleteConversationThreadResponse, FetchConversationThreadResponse } from "../types/ConversationThread";
-import { MessageResponse } from "../types/ChatMessage";
+import {
+    CreateConversationThreadResponse,
+    DeleteConversationThreadResponse,
+    FetchConversationThreadResponse,
+} from "../types/ConversationThread";import { MessageResponse } from "../types/ChatMessage";
 
 const expressURL = NEXT_PUBLIC_EXPRESS_API_URL;
 
@@ -90,25 +93,25 @@ export const deleteConversationThread = async (
   return response.json();
 };
 export const createConversationThread = async (
-  documentId: string
+    documentId: string
 ): Promise<CreateConversationThreadResponse> => {
-  const response = await post(
-    `${expressURL}/threads`,
-    {
-      "Content-Type": "application/json"
-    },
-    JSON.stringify({ documentId,title:''+ (new Date()).toISOString() })
-  );
+    const response = await post(
+        `${expressURL}/threads`,
+        {
+            "Content-Type": "application/json",
+        },
+        JSON.stringify({ documentId })
+    );
 
-  if (!response) {
-    return {
-      success: false,
-      data: null,
-      message: "Authentication required"
-    };
-  }
+    if (!response) {
+        return {
+            success: false,
+            data: null,
+            message: "Authentication required",
+        };
+    }
 
-  return response.json();
+    return response.json();
 };
 
 export const  askQuestion = async (question,threadId):Promise<AnswerResponse>  =>  {

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -26,9 +25,11 @@ import { ConversationThread } from "@/app/types/ConversationThread";
 export default function ChatWrapper() {
     const router = useRouter();
 
-    // Sidebar and conversation state
     const [sidebarModeTrigger, setSidebarModeTrigger] = useState(0);
-    const [selectedDoc, setSelectedDoc] = useState<UserDocument | null>(null);
+
+    const [selectedDoc, setSelectedDoc] =
+        useState<UserDocument | null>(null);
+
     const [selectedThread, setSelectedThread] =
         useState<ConversationThread | null>(null);
 
@@ -36,17 +37,18 @@ export default function ChatWrapper() {
     const [threads, setThreads] = useState<ConversationThread[]>([]);
     const [messageList, setMessageList] = useState<Message[]>([]);
 
-    // Loading states
     const [uploadInProgress, setUploadState] = useState(false);
     const [loading, setLoader] = useState(false);
     const [creatingThread, setCreatingThread] = useState(false);
 
-    // Toast state
     const [showToastNotification, setToastNotification] = useState(false);
     const [toastLabel, setToastLabel] = useState("");
     const [toastStatus, setToastStatus] = useState("INFO");
 
-    // Prevent an older message-fetch request from replacing newer selection.
+    // Keeps track of the active thread without waiting for a React render.
+    const selectedThreadIdRef = useRef<string | null>(null);
+
+    // Prevents stale message-fetch responses from replacing newer selections.
     const messageRequestId = useRef(0);
 
     // --------------------------------------------------
@@ -64,10 +66,10 @@ export default function ChatWrapper() {
     };
 
     // --------------------------------------------------
-    // Document and thread fetching
+    // Fetch documents and threads
     // --------------------------------------------------
 
-    const getDocuments = async () => {
+    const getDocuments = async (): Promise<UserDocument[]> => {
         const res = await fetchUserDocuments();
 
         const fetchedDocuments = res?.data?.documents ?? [];
@@ -77,7 +79,7 @@ export default function ChatWrapper() {
         return fetchedDocuments;
     };
 
-    const getThreads = async () => {
+    const getThreads = async (): Promise<ConversationThread[]> => {
         const res = await fetchConversationThreads();
 
         const fetchedThreads = res?.data?.threads ?? [];
@@ -98,33 +100,44 @@ export default function ChatWrapper() {
         setMessageList([]);
 
         try {
-            const result = await fetchConversationThreadMessages(threadId);
+            const result =
+                await fetchConversationThreadMessages(threadId);
 
-            // Ignore stale responses if another thread was selected.
-            if (requestId !== messageRequestId.current) return;
+            // Ignore a response if another thread has since been selected.
+            if (
+                requestId !== messageRequestId.current ||
+                selectedThreadIdRef.current !== threadId
+            ) {
+                return;
+            }
 
             if (!result?.success) {
                 throw new Error(
-                    result?.message || "Unable to fetch conversation messages"
+                    result?.message ||
+                    "Unable to fetch conversation messages"
                 );
             }
 
             const fetchedMessages = result.data?.messages ?? [];
 
-            const formattedMessages: Message[] = fetchedMessages.map(
-                (message) => ({
+            const formattedMessages: Message[] =
+                fetchedMessages.map((message) => ({
                     id: message.id,
                     sender: message.role,
                     text: message.content,
                     timestamp: message.createdAt,
                     evidence: message.evidence ?? [],
-                })
-            );
+                }));
 
             setMessageList(formattedMessages);
 
         } catch (error) {
-            if (requestId !== messageRequestId.current) return;
+            if (
+                requestId !== messageRequestId.current ||
+                selectedThreadIdRef.current !== threadId
+            ) {
+                return;
+            }
 
             console.error("Message fetching failed:", error);
 
@@ -172,7 +185,16 @@ export default function ChatWrapper() {
 
     const onDocSelect = (document: UserDocument) => {
         setToastNotification(false);
+
+        // Selecting a document is not the same as selecting a conversation.
+        // Clear the active conversation so messages cannot go to an old thread.
+        selectedThreadIdRef.current = null;
+        messageRequestId.current++;
+
+        setSelectedThread(null);
         setSelectedDoc(document);
+        setMessageList([]);
+        setLoader(false);
     };
 
     // --------------------------------------------------
@@ -182,8 +204,16 @@ export default function ChatWrapper() {
     const onThreadSelect = (thread: ConversationThread) => {
         setToastNotification(false);
 
+        selectedThreadIdRef.current = thread.id;
+
         setSelectedThread(thread);
-        setSelectedDoc(null);
+
+        // Resolve the document associated with this thread.
+        const associatedDocument = documents.find(
+            (document) => document.id === thread.document.id
+        );
+
+        setSelectedDoc(associatedDocument ?? null);
 
         getThreadMessages(thread.id);
     };
@@ -192,8 +222,10 @@ export default function ChatWrapper() {
     // Create a new conversation
     // --------------------------------------------------
 
-    const handleCreateThread = async (document: UserDocument) => {
-        if (creatingThread) return;
+    const handleCreateThread = async (
+        document: UserDocument
+    ): Promise<boolean> => {
+        if (creatingThread) return false;
 
         setCreatingThread(true);
         setToastNotification(false);
@@ -207,7 +239,7 @@ export default function ChatWrapper() {
                 );
             }
 
-            // Refresh the thread list to obtain the complete thread DTO.
+            // Fetch the updated list to obtain the complete thread DTO.
             const updatedThreads = await getThreads();
 
             const newThread = updatedThreads.find(
@@ -223,6 +255,8 @@ export default function ChatWrapper() {
             // Invalidate any outstanding message-fetch request.
             messageRequestId.current++;
 
+            selectedThreadIdRef.current = newThread.id;
+
             setSelectedThread(newThread);
             setSelectedDoc(document);
             setMessageList([]);
@@ -230,6 +264,8 @@ export default function ChatWrapper() {
 
             // Return the sidebar to conversation mode.
             setSidebarModeTrigger((previous) => previous + 1);
+
+            return true;
 
         } catch (error) {
             console.error("Thread creation failed:", error);
@@ -240,6 +276,8 @@ export default function ChatWrapper() {
                     : "Unable to create conversation",
                 "ERROR"
             );
+
+            return false;
 
         } finally {
             setCreatingThread(false);
@@ -259,7 +297,7 @@ export default function ChatWrapper() {
                 result.data?.documentId === id
             ) {
                 showToast(
-                    "Document processing completed or started successfully",
+                    "Document processing started successfully",
                     "WARN"
                 );
 
@@ -279,7 +317,6 @@ export default function ChatWrapper() {
                 "Unable to process the document",
                 "ERROR"
             );
-
         }
     };
 
@@ -336,7 +373,9 @@ export default function ChatWrapper() {
 
         if (!trimmedMessage) return;
 
-        if (!selectedThread?.id) {
+        const threadId = selectedThreadIdRef.current;
+
+        if (!threadId) {
             showToast(
                 "Please select a conversation first.",
                 "WARN"
@@ -345,8 +384,6 @@ export default function ChatWrapper() {
         }
 
         if (loading) return;
-
-        const threadId = selectedThread.id;
 
         const userMessage: Message = {
             id: `temp-${Date.now()}`,
@@ -377,13 +414,18 @@ export default function ChatWrapper() {
         try {
             const result = await askQuestion(message, threadId);
 
+            // The user might have switched threads while the request
+            // was being processed.
+            if (selectedThreadIdRef.current !== threadId) {
+                return;
+            }
+
             if (!result?.success || !result.data?.answer) {
                 throw new Error(
                     result?.message || "Unable to generate an answer"
                 );
             }
 
-            // Use the persisted assistant message returned by the backend.
             const storedMessage = result.data.message;
 
             const assistantMessage: Message = {
@@ -400,6 +442,10 @@ export default function ChatWrapper() {
             ]);
 
         } catch (error) {
+            if (selectedThreadIdRef.current !== threadId) {
+                return;
+            }
+
             console.error("Answer generation failed:", error);
 
             showToast(
@@ -410,7 +456,10 @@ export default function ChatWrapper() {
             );
 
         } finally {
-            setLoader(false);
+            // Only clear the loading state if the same thread is active.
+            if (selectedThreadIdRef.current === threadId) {
+                setLoader(false);
+            }
         }
     };
 
@@ -447,7 +496,7 @@ export default function ChatWrapper() {
                 />
 
                 <ChatWindow
-                    selectedThread={selectedThread?.id}
+                    selectedThread={selectedThread?.document.fileName}
                     loading={loading}
                     messages={messageList}
                     onMessageSend={onMessageSent}
