@@ -7,10 +7,10 @@ interface ChatWindowProps{
   messages: Message[],
   onMessageSend:(message:string)=>void,
   loading:boolean,
-  selectedDocument:string|undefined
+  selectedThread:string|undefined
 }
 
-export default function ChatWindow({messages,onMessageSend,loading,selectedDocument}:ChatWindowProps) {
+export default function ChatWindow({messages,onMessageSend,loading,selectedThread}:ChatWindowProps) {
   const chatContainer = useRef<HTMLDivElement | null>(null)
   const messageList = messages.map((m,k)=><ChatMessage key={k} message={m}></ChatMessage>)
   useEffect(()=>{
@@ -33,7 +33,7 @@ export default function ChatWindow({messages,onMessageSend,loading,selectedDocum
         py-4
         space-y-4
     ">
-      {messageList?.length ? messageList : !selectedDocument ? 'Pick an uploaded document to start asking questions' : `Ask a question about ${selectedDocument}`}
+      {messageList?.length ? messageList : !selectedThread ? 'Pick a conversation to start asking questions' : `Ask a question about ${selectedThread}`}
       <span className="animate-pulse">{loading ? 'Thinking...' : ''}</span>
     </div>
       

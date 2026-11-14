@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Button from "../common/Button";
 import { processDocument } from "@/app/services/api";
 import { UserDocument } from "@/app/types/UserDocument";
+import StatusBadge from "../common/StatusBadge";
+import ListItem from "./ListItem";
 interface DocumentCardProps{
     file:UserDocument,
     onDocSelect:(d:UserDocument)=>void,
@@ -19,6 +21,7 @@ export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
         }
     }
     const handleDocSelect = (file:UserDocument) => {
+        return
         if(file.status !== 'READY'){
             return;
         }
@@ -72,31 +75,14 @@ export default function DocumentCard({file,onDocSelect}:DocumentCardProps) {
     }
 };
 return (
-    <div
-            onClick={() => handleDocSelect(file)}
-            className="
-                cursor-pointer
-                border-b
-                border-zinc-800
-                px-4
-                py-3
-                transition-colors
-                hover:bg-zinc-800
-            "
-        >
-            <p className="
-                truncate
-                text-sm
-                font-medium
-                text-zinc-100
-            ">
-                {file?.fileName}
-            </p>
-
-            <p className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
-                {statusBadge()}
-                <span>Last Updated {lastUpdatedStr}</span>
-            </p>
-        </div>
+    <ListItem
+    title={file.fileName}
+    subtitle={lastUpdatedStr}
+    onClick={()=>handleDocSelect(file)}
+>
+    <p className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
+        {statusBadge()}
+    </p>
+</ListItem>
     );
 }
