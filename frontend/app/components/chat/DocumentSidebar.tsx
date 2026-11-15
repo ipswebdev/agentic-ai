@@ -18,6 +18,7 @@ interface DocumentSidebarProps {
     onUploadDocument: (file: File) => void;
     onThreadSelect: (d: ConversationThread) => void;
     onCreateThread: (document: UserDocument) => Promise<boolean>;
+    onDeleteThread: (thread: ConversationThread) => void;
     creatingThread: boolean;
     resetToThreads: number;
 }
@@ -35,6 +36,7 @@ export default function DocumentSidebar({
     onCreateThread,
     creatingThread,
     resetToThreads,
+    onDeleteThread
 }: DocumentSidebarProps) {
     const [sidebarMode, setSidebarMode] =
         useState<SidebarMode>("THREADS");
@@ -91,6 +93,7 @@ export default function DocumentSidebar({
                         threads={threads}
                         selectedThreadId={selectedThreadId}
                         onThreadSelect={onThreadSelect}
+                        onDelete={onDeleteThread}
                     />
                 </>
             ) : (

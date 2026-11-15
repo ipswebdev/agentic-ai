@@ -16,7 +16,6 @@ const expressURL = NEXT_PUBLIC_EXPRESS_API_URL;
 export const  fetchUserDocuments = async () :Promise<FetchDocumentsResponse> => {
     
     const url = `${expressURL}/documents`;
-    console.log('url',url)
     const response = await get(url,{})
     if (!response) {
         return {
@@ -135,29 +134,47 @@ export const  askQuestion = async (question,threadId):Promise<AnswerResponse>  =
     return data;
 }
 
-export const  processDocument = async (docId:string) => {
-    const url = `${expressURL}/documents/${docId}/process-document`
-    console.log(docId,expressURL)
-    const header = {
-            "Content-Type": "application/json"
-        }
-    const postReq = await post(url,header)
 
-    return postReq.json();
-}
+export const processDocument = async (docId: string) => {
+    const url = `${expressURL}/documents/${docId}/process-document`;
 
-export const  uploadDocument = async (file:File) => {
+    const response = await post(
+        url,
+        { "Content-Type": "application/json" },
+    );
+
+    if (!response) {
+        return {
+            success: false,
+            data: null,
+            message: "Authentication required",
+        };
+    }
+
+    return response.json();
+};
+
+export const uploadDocument = async (file: File) => {
     const formData = new FormData();
-
     formData.append("file", file);
+
     const url = `${expressURL}/documents/upload`;
-    const postReq = await post(url,{},formData)
-    return postReq.json();
-}
+    const response = await post(url, {}, formData);
+
+    if (!response) {
+        return {
+            success: false,
+            data: null,
+            message: "Authentication required",
+        };
+    }
+
+    return response.json();
+};
+
 
 export const authenticateUser = async (authCode:string) => {
     const payload = {authCode:authCode}
-    console.log('payload',payload)
     const results = await fetch(`${expressURL}/auth/google/login`,{
         method:'POST',
         headers: {

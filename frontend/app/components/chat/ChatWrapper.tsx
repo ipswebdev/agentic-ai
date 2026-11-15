@@ -8,6 +8,7 @@ import SelectedDocument from "./SelectedDocument";
 import {
     askQuestion,
     createConversationThread,
+    deleteConversationThread,
     fetchConversationThreads,
     fetchConversationThreadMessages,
     fetchUserDocuments,
@@ -285,6 +286,60 @@ export default function ChatWrapper() {
     };
 
     // --------------------------------------------------
+    // Thread deletion
+    // --------------------------------------------------
+    const handleDeleteThread = async (
+        thread: ConversationThread
+    ): Promise<void> => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete "${thread.title}"? This will also delete its messages.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            const result = await deleteConversationThread(thread.id);
+
+            if (!result?.success) {
+                throw new Error(
+                    result?.message || "Unable to delete conversation"
+                );
+            }
+
+            // Remove the deleted thread from the sidebar.
+            setThreads((previous) =>
+                previous.filter((item) => item.id !== thread.id)
+            );
+
+            // Clear the chat only if the deleted thread was active.
+            if (selectedThreadIdRef.current === thread.id) {
+                selectedThreadIdRef.current = null;
+
+                // Invalidate any pending message-fetch request.
+                messageRequestId.current++;
+
+                setSelectedThread(null);
+                setSelectedDoc(null);
+                setMessageList([]);
+                setLoader(false);
+            }
+
+            showToast("Conversation deleted successfully", "SUCCESS");
+
+        } catch (error) {
+            console.error("Thread deletion failed:", error);
+
+            showToast(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to delete conversation",
+                "ERROR"
+            );
+        }
+    };
+
+
+    // --------------------------------------------------
     // Document processing
     // --------------------------------------------------
 
@@ -463,6 +518,7 @@ export default function ChatWrapper() {
         }
     };
 
+    
     // --------------------------------------------------
     // Render
     // --------------------------------------------------
@@ -493,6 +549,7 @@ export default function ChatWrapper() {
                     onThreadSelect={onThreadSelect}
                     onUploadDocument={onUploadDocument}
                     onCreateThread={handleCreateThread}
+                    onDeleteThread={handleDeleteThread}
                 />
 
                 <ChatWindow
