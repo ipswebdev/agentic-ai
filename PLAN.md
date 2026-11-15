@@ -1,687 +1,346 @@
-Your weekly plan
-Phase 1 — Improve the existing RAG application
-Weeks 1–4
-Week	Dates	Focus	Main deliverable
-1	Nov 3–9	Establish RAG baseline	Evaluation document
-2	Nov 10–16	Document-based conversation threads	Persistent threads with access controls
-3	Nov 17–23	Conversation history and follow-ups	Multi-turn conversational RAG
-4	Nov 24–30	Improve RAG quality	Grounded answers with source references
+AI Engineer + Full-Stack AI Engineer Roadmap
+Updated plan --- November 16, 2026
+Target completion: February 28, 2027
+Weekly commitment: 6--7 hours (plan around 6.5 hours)
+Estimated remaining effort: 97.5 hours across 15 weeks
+What is already complete
+- W1 --- RAG baseline: completed. Keep the existing evaluation set
+  and findings as the benchmark for later RAG improvements.
+- W2 --- Persistent conversation threads: completed.
+  Thread/message persistence, ownership checks, frontend integration,
+  conversation selection and deletion have been implemented and
+  tested.
+Do not repeat these milestones unless later evaluation reveals a
+specific gap.
+Revised learning order
+The next topics are deliberately ordered as:
+1. LLM tool calling and function execution
+2. MCP fundamentals and hands-on client/server integration
+3. Google ADK agents, tools, state and workflows
+4. LangGraph fundamentals and comparison
+5. Conversational RAG
+6. RAG quality improvements
+7. Agentic RAG integration
+This sequence separates the concepts. Tool calling teaches the
+underlying model/tool interaction; MCP standardizes how tools are
+exposed and consumed; ADK then provides an agent framework in which
+tools and workflows can be orchestrated.
 
-Week 1 — Establish the RAG baseline
-Goal: Understand why answers are poor before changing prompts or retrieval.
+The existing RAG baseline remains intact. We are postponing
+conversational RAG and RAG quality work, not abandoning RAG
+fundamentals.
+Phase 1 --- Tool calling and MCP
+Week 1 · November 16--22
+Focus: LLM tool calling fundamentals
 
-Already explored: architecture, chunking implementation, retrieval logic, four test questions and retrieved matches.
+Goal: Understand and implement the complete tool-calling loop
+without introducing an agent framework yet.
 
-Your remaining work:
-- Correct the resume's project description to match the actual implementation.
-- Upload and process the corrected PDF on the deployed application.
-- Build a 10-question evaluation set covering:
-  - Direct questions.
-  - Multi-part questions.
-  - Questions requiring information from multiple chunks.
-  - Follow-up questions.
-  - Questions whose answers are absent from the document.
-- Record answers and retrieved chunks for each question.
-- Categorise failures into retrieval, missing context, generation or ambiguity.
-- Identify the three highest-impact quality problems.
-Deliverable: A reproducible baseline evaluation document.
-Week 2 — Document-based conversation threads
-Goal: Introduce persistent conversations associated with users and documents.
-- Learn data modelling for threads and messages.
-- Design a thread model linked to userId and documentId.
-- Design a message model linked to a thread.
-- Implement thread creation and retrieval.
-- Implement message persistence and retrieval.
-- Enforce ownership checks.
-- Test that users cannot access other users' conversations.
-Deliverable: Persistent document-based conversation threads with access controls.
-Week 3 — Conversation history and follow-up questions
-Goal: Make the assistant understand conversational context.
-- Load a bounded number of recent messages.
-- Pass relevant history to the AI service.
-- Implement follow-up query resolution.
-- Keep the original question, history and retrieved evidence distinct.
-- Persist user messages and assistant responses.
-- Test multi-turn conversations and isolated new threads.
-Deliverable: A conversational RAG flow supporting follow-up questions and history.
-Week 4 — Improve RAG quality
-Goal: Improve answer quality using evidence rather than guesswork.
-- Compare retrieval results against Week 1.
-- Inspect missed evidence.
-- Improve the generation prompt.
-- Add source references or page/chunk citations.
-- Test questions requiring multiple chunks.
-- Make one targeted retrieval or chunking improvement.
-- Document the improvement.
-Deliverable: More reliable RAG with source references and an evaluation report.
+Activities: - Distinguish a normal LLM response, structured output and
+tool calling. - Understand tool/function schemas, descriptions,
+arguments and validation. - Learn the model-request → tool-call decision
+→ application execution → tool-result → model-follow-up cycle. -
+Implement one controlled document-related tool in Python. - Validate
+arguments in application code; never trust model-generated arguments. -
+Handle unknown tools, invalid inputs, execution errors and timeouts. -
+Test both successful and failed tool calls.
 
-Phase 2 — Agent fundamentals and orchestration
-Weeks 5–8
-Week	Dates	Focus	Main deliverable
-5	Dec 1–7	LLM tool calling and agent fundamentals	Working tool-using AI feature
-6	Dec 8–14	State, routing and workflow control	Multi-step controlled workflow
-7	Dec 15–21	LangGraph fundamentals	Working LangGraph workflow
-8	Dec 22–28	Persistence, recovery and human approval	Recoverable workflow
+Deliverable: A working Python tool-calling flow that invokes a
+controlled document operation and uses the result in a final answer.
+Week 2 · November 23--29
+Focus: MCP architecture and fundamentals
 
-Week 5 — LLM tool calling and agent fundamentals
-- Understand LLM calls versus tool calling, deterministic workflows and agents.
-- Learn tool schemas and structured outputs.
-- Implement one controlled tool invocation.
-- Validate tool inputs.
-- Handle invalid inputs and tool failures.
-- Demonstrate successful and failed runs.
-Deliverable: A working tool-using AI feature.
-Week 6 — State, routing and workflow control
-- Learn workflow state, branching and conditional routing.
-- Define explicit workflow states and transitions.
-- Add a second route or tool.
-- Handle missing information and unsupported requests.
-- Record workflow decisions and outputs.
-- Explain why the workflow selected a particular path.
-Deliverable: A multi-step workflow with observable decisions.
-Week 7 — LangGraph fundamentals
-- Learn graphs, nodes, edges and shared state.
-- Understand conditional edges.
-- Understand LangGraph versus chains and unconstrained agent loops.
-- Reimplement the workflow using LangGraph.
-- Inspect state between nodes.
-- Handle errors and termination conditions.
-- Compare both implementations.
-Deliverable: A working LangGraph workflow.
-Week 8 — Persistence, recovery and human approval
-- Learn checkpointing and persisted workflow state.
-- Understand retries, idempotency and partial failures.
-- Add human approval before a consequential action.
-- Resume paused workflows.
-- Verify retries do not duplicate actions.
-- Demonstrate paused, approved and resumed workflows.
-Deliverable: A recoverable workflow with human-in-the-loop control.
+Goal: Understand MCP independently of ADK or LangGraph.
 
-Phase 3 — MCP and full-stack integration
-Weeks 9–11
-Week	Dates	Focus	Main deliverable
-9	Dec 29–Jan 4	MCP fundamentals and integration	MCP integration with agent workflow
-10	Jan 5–11	React, TypeScript and Next.js	Usable AI workflow interface
-11	Jan 12–18	Full-stack integration and deployment	End-to-end AI feature
+Activities: - Understand the MCP host, client and server roles. - Learn
+tools, resources and prompts, including what each is for. - Understand
+the lifecycle: initialization, capability discovery and invocation. -
+Compare MCP with REST APIs and native LLM function calling. - Explore
+the protocol's message model and supported transports at a practical
+level. - Run an existing MCP server and inspect its capabilities. - Use
+an MCP client to list and call a tool.
 
-Week 9 — MCP fundamentals and integration
-- Understand MCP clients, servers, tools, resources and prompts.
-- Compare MCP with REST APIs and native function calling.
-- Build a small MCP server around a useful document operation.
-- Validate tool inputs and outputs.
-- Connect an MCP client.
-- Integrate the tool with LangGraph.
-- Handle unavailable tools, timeouts and invalid responses.
-- Enforce permissions outside the model's decision-making.
-Deliverable: A working MCP integration used by an agentic workflow.
-Week 10 — React, TypeScript and Next.js
-- Practise React components, props, hooks and state.
-- Implement forms and typed API contracts.
-- Handle loading, success, empty and error states.
-- Learn Next.js routing and server/client boundaries.
-- Build an interface for submitting requests and displaying workflow progress.
-- Display retrieved evidence, tool outputs and approval requests.
-- Prevent duplicate submissions.
-Deliverable: A usable React/Next.js interface for the AI workflow.
-Week 11 — Full-stack integration and deployment
-- Integrate the UI with Express and FastAPI.
-- Define and validate API contracts.
-- Review authentication, authorization and service boundaries.
-- Learn Docker images, containers, ports and environment configuration.
-- Create a reproducible development setup or containerise a service.
-- Add a basic CI check.
-- Document how to run and deploy the application.
-Deliverable: An end-to-end AI feature with reproducible setup and basic CI.
+Deliverable: A small working MCP client that connects to a server,
+discovers tools and invokes one successfully.
+Week 3 · November 30--December 6
+Focus: Build and integrate an MCP server
 
-Phase 4 — Production credibility and portfolio
-Weeks 12–14
-Week	Dates	Focus	Main deliverable
-12	Jan 19–25	Evaluation, observability and reliability	Demonstrable AI application
-13	Jan 26–Feb 1	Interview readiness	Project walkthrough and interview notes
-14	Feb 2–8	Gap closure and market feedback	Targeted next-step plan
+Goal: Expose a useful, permission-aware operation from the existing
+project through MCP.
 
-Week 12 — Evaluation, observability and reliability
-- Compare the evaluation set against the original baseline.
-- Track workflow outcomes and tool failures.
-- Add structured logs and correlation IDs.
-- Inspect latency and failure points.
-- Add high-value integration tests.
-- Verify authorization boundaries.
-- Update README with architecture, setup, workflow diagrams and limitations.
-- Record a short project demo.
-Deliverable: An AI application with evaluation evidence, observability and documented architecture.
-Week 13 — Interview readiness
-- Explain the architecture without notes.
-- Practise RAG, retrieval, tool calling, LangGraph and MCP questions.
-- Explain state management, recovery, security and design trade-offs.
-- Practise one Python or TypeScript coding exercise.
-- Draft accurate resume bullets based on implemented work.
-- Apply to a focused batch of relevant roles.
-- Record recruiter and interview feedback.
-Deliverable: Project walkthrough and interview preparation notes.
-Week 14 — Gap closure and market feedback
-- Review recruiter and interview feedback.
-- Identify repeated skill gaps.
-- Improve one meaningful weakness.
-- Rehearse the demo and architecture discussion.
-- Tailor your resume for AI application and full-stack roles.
-- Set your next learning priority based on application feedback.
+Activities: - Build a small Python MCP server around a document
+operation, such as document metadata lookup or controlled document
+search. - Define clear input and output schemas. - Validate inputs and
+return useful errors. - Connect to the server using an MCP client. -
+Test tool discovery and invocation. - Handle unavailable servers,
+timeouts and malformed responses. - Keep authentication, ownership and
+authorization checks in application code---not in the model's
+decision. - Document the boundary between the MCP server and the
+existing Express/FastAPI services.
+
+Deliverable: A working MCP server and client demonstrating a useful
+document operation, with validation and permission boundaries.
+Phase 2 --- Google ADK and orchestration
+Week 4 · December 7--13
+Focus: Google ADK fundamentals and tool-using agents
+
+Goal: Build an agent and understand how ADK structures model-driven
+tool use.
+
+Activities: - Understand ADK's core abstractions: agents, instructions,
+models, tools, runners and sessions. - Compare a direct tool-calling
+loop with an ADK agent. - Create a basic Python ADK agent. - Add one
+controlled document-related tool. - Add the MCP integration from Week 3
+if the core agent is working. - Inspect tool selection, execution and
+the final response. - Handle invalid tool inputs and tool failures.
+
+Deliverable: A working ADK document assistant that can use a
+controlled tool and explain its result.
+Week 5 · December 14--20
+Focus: ADK workflows, state and routing
+
+Goal: Move from one tool-using agent to a controlled multi-step
+workflow.
+
+Activities: - Understand agent state and session state. - Explore
+sequential and parallel workflow patterns. - Learn conditional routing
+and agent delegation. - Define explicit workflow paths for document Q&A
+and document summarization. - Add a second tool or specialized agent. -
+Handle missing information and unsupported requests. - Inspect
+intermediate state and record why a route was selected. - Compare
+workflow orchestration with unconstrained agent loops.
+
+Deliverable: A multi-step ADK workflow with state, at least two
+execution paths and observable decisions.
+Week 6 · December 21--27
+Focus: LangGraph fundamentals and framework comparison
+
+Goal: Understand graph-based orchestration and compare it with ADK.
+
+Activities: - Learn graphs, nodes, edges and shared state. - Understand
+conditional edges and termination conditions. - Reimplement a small part
+of the Week 5 workflow using LangGraph. - Inspect state between nodes. -
+Handle errors and invalid transitions. - Compare ADK and LangGraph in
+state management, routing, tool integration, debugging and execution
+control. - Decide which framework is appropriate for which type of
+workflow.
+
+Deliverable: A working LangGraph workflow and a concise
+ADK-versus-LangGraph comparison.
+Phase 3 --- Return to RAG
+Week 7 · December 28--January 3
+Focus: Conversational RAG and follow-up questions
+
+Goal: Make the existing document assistant understand follow-up
+questions using persistent conversation history.
+
+Activities: - Trace the current request from Next.js through Express to
+FastAPI. - Distinguish the current question, original question,
+conversation history, resolved query and retrieved evidence. - Load a
+bounded number of recent messages from the thread. - Pass the history to
+the AI service through the existing service boundary. - Implement
+follow-up query resolution. - Use the resolved query for retrieval while
+preserving the original user question. - Generate an answer using
+retrieved evidence and relevant conversation context. - Test follow-ups,
+topic changes, empty history and isolated new threads.
+
+Deliverable: A multi-turn conversational RAG flow that continues to
+work after refreshing and reopening a thread.
+Week 8 · January 4--10
+Focus: RAG quality, grounding and citations
+
+Goal: Improve answer reliability using the original evaluation set.
+
+Activities: - Run the original baseline questions against the updated
+application. - Compare retrieved chunks and answers with the baseline. -
+Inspect missed or irrelevant evidence. - Improve the generation prompt
+to distinguish supported from unsupported claims. - Add source metadata
+and chunk/page references where available. - Test questions requiring
+evidence from multiple chunks. - Make one targeted retrieval, chunking
+or ranking improvement. - Record what improved and what did not.
+
+Deliverable: A more grounded RAG implementation with source
+references and a before/after evaluation report.
+Phase 4 --- Agentic RAG and application integration
+Week 9 · January 11--17
+Focus: Integrate tools, MCP, ADK and RAG
+
+Goal: Build a controlled agentic document workflow using the
+capabilities learned independently.
+
+Activities: - Define the agent's responsibilities and allowed tools. -
+Expose document retrieval as a controlled tool. - Connect the MCP
+document operation to the agent. - Decide when the agent should retrieve
+document evidence and when it should use another tool. - Keep retrieval
+and answer generation grounded in the source document. - Preserve thread
+and user authorization boundaries. - Test tool selection, retrieval
+failures and unsupported questions.
+
+Deliverable: A demonstrable agentic document assistant that uses RAG
+and at least one MCP-exposed capability.
+Week 10 · January 18--24
+Focus: Workflow persistence, recovery and human approval
+
+Goal: Understand production-oriented workflow control.
+
+Activities: - Learn checkpointing and persisted workflow state. -
+Understand retries, idempotency and partial failures. - Add a human
+approval step before a consequential action. - Resume a paused
+workflow. - Verify retries do not duplicate actions. - Demonstrate
+paused, approved, rejected and resumed paths. - Compare how the chosen
+orchestration framework supports these behaviours.
+
+Deliverable: A recoverable workflow with a demonstrated
+human-in-the-loop path.
+Week 11 · January 25--31
+Focus: Full-stack AI workflow interface
+
+Goal: Expose the workflow through the existing application rather
+than building a separate tutorial UI.
+
+Activities: - Define the UI/API contract for workflow requests and
+progress. - Integrate the Next.js UI with Express and FastAPI. - Display
+conversation messages, retrieved evidence and tool results. - Display
+workflow status and approval requests where relevant. - Handle loading,
+success, empty and error states. - Prevent duplicate submissions. -
+Verify authentication and authorization across the flow.
+
+Deliverable: A usable full-stack interface for the AI workflow.
+Week 12 · February 1--7
+Focus: Deployment and reproducible development
+
+Goal: Make the implementation easier to run, test and demonstrate.
+
+Activities: - Review service boundaries and environment configuration. -
+Learn Docker images, containers, ports and environment variables. -
+Create a reproducible development setup or containerize one service. -
+Add a basic CI check for relevant tests/builds. - Validate API contracts
+and deployment configuration. - Document how to run and deploy the
+application. - Verify the deployed workflow end to end.
+
+Deliverable: An end-to-end AI feature with reproducible setup and
+basic CI.
+Phase 5 --- Production credibility and career readiness
+Week 13 · February 8--14
+Focus: Evaluation, observability and reliability
+
+Goal: Gather evidence that the application works reliably, not just
+in a happy-path demo.
+
+Activities: - Compare the final RAG evaluation set with the original
+baseline. - Track workflow outcomes, tool calls and tool failures. - Add
+structured logs and correlation IDs where useful. - Inspect latency and
+failure points. - Add high-value integration tests. - Verify user,
+thread and document authorization boundaries. - Document known
+limitations and failure modes. - Update the README with architecture and
+workflow diagrams. - Record a short project demo.
+
+Deliverable: An AI application with evaluation evidence,
+observability, tests and documented limitations.
+Week 14 · February 15--21
+Focus: Interview readiness and project presentation
+
+Activities: - Explain the architecture without notes. - Practise RAG,
+embeddings, retrieval, tool calling, MCP, ADK and LangGraph questions. -
+Explain state management, workflow recovery, security and design
+trade-offs. - Practise one Python or TypeScript coding exercise. -
+Prepare a project walkthrough covering a real request from UI to AI
+service and back. - Draft accurate resume bullets based only on
+implemented work. - Apply to a focused batch of relevant roles and
+record feedback.
+
+Deliverable: Project walkthrough, architecture notes and interview
+preparation material.
+Week 15 · February 22--28
+Focus: Gap closure and market feedback
+
+Activities: - Review recruiter and interview feedback. - Identify
+repeated skill gaps. - Improve one meaningful weakness. - Rehearse the
+project demo and architecture discussion. - Tailor the resume for AI
+application and full-stack roles. - Set the next learning priority based
+on evidence from applications and interviews.
+
 Deliverable: A targeted next-step plan based on market feedback.
-
-Starting tomorrow: Week 1 execution schedule
-Let's make the first week particularly concrete. We'll use seven hours across the week, with the implementation work happening against the deployed application.
-Week 1 · November 3–9
-Partially completed
-
-Week 1 checklist0/6
-
-
-
-[ ] Tuesday, Nov 3 · 1 hour
-
-Correct the resume project description and upload the revised PDF.
-
-[ ] Wednesday, Nov 4 · 1.5 hours
-
-Prepare the 10-question evaluation set and test the deployed application.
-
-[ ] Thursday, Nov 5 · 1 hour
-
-Inspect retrieved chunks, scores and answer quality for each question.
-
-[ ] Friday, Nov 6 · 1.5 hours
-
-Categorise failures: retrieval, context, generation or ambiguity.
-
-[ ] Saturday, Nov 7 · 1 hour
-
-Review the existing chunking and retrieval behaviour; document observations.
-
-[ ] Sunday, Nov 8 · 1 hour
-
-Write the baseline report and identify the three highest-impact problems.
-
-
-Monday is left as a buffer for unfinished work or rest.
-
-How we'll work together
-A few rules are important for making this roadmap useful:
-1. One milestone at a time. We won't jump ahead to LangGraph while the RAG foundation is still unreliable.
-2. Understand before implementing. I'll explain the concepts and the reasoning behind the design before we change code.
-3. Use the existing project. We improve the deployed application instead of creating another tutorial project.
-4. Test deployed behaviour. We'll use Vercel and Render for application testing, as you've been doing.
-5. Measure improvements. We keep the Week 1 evaluation set and use it again in Week 4 and Week 12.
-6. Keep the document as the source of truth. Independent verification can be a separate future workflow; it must not silently change document-grounded answers.
-7. Update the resume only after implementation. No claiming ChromaDB, LangGraph, MCP or other capabilities before we have working implementation evidence.
-
-Updated After GoogleADK Addition
-# AI Engineer + Full-Stack AI Engineer Roadmap
-**Updated version — Google ADK incorporated**
-
-**Duration:** 14 weeks  
-**Start date:** November 3, 2026  
-**End date:** February 8, 2027  
-**Weekly commitment:** 7 hours  
-**Total learning commitment:** 98 hours
-
-## Learning approach
-
-- Improve the existing deployed RAG application rather than build another tutorial project.
-- Understand concepts before implementing frameworks.
-- Use Python for AI services, with the existing Next.js, Express and FastAPI architecture.
-- Keep LangGraph as the primary orchestration implementation.
-- Incorporate Google ADK for practical agent development and framework comparison.
-- Learn MCP independently before integrating it with an agent.
-- Test deployed behaviour and retain evaluation evidence.
-- Update the resume only after capabilities have been implemented and demonstrated.
-
-## Phase 1 — Improve the existing RAG application
-
-### Week 1 · November 3–9
-**Focus:** Establish the RAG baseline
-
-Activities:
-- Understand the existing architecture and request flow.
-- Correct the resume project description to reflect actual implementation.
-- Build a 10-question evaluation set.
-- Test direct, multi-part, cross-chunk, follow-up and unanswerable questions.
-- Record retrieved chunks, scores and generated answers.
-- Categorise failures into retrieval, missing context, generation and ambiguity.
-- Identify the three highest-impact quality problems.
-
-**Deliverable:** Reproducible baseline evaluation document.
-
-### Week 2 · November 10–16
-**Focus:** Document-based conversation threads
-
-Activities:
-- Learn data modelling for threads and messages.
-- Design a thread model linked to `userId` and `documentId`.
-- Design a message model linked to a thread.
-- Implement thread creation and retrieval.
-- Implement message persistence and retrieval.
-- Enforce ownership checks.
-- Test that users cannot access other users' conversations.
-
-**Deliverable:** Persistent document-based conversation threads with access controls.
-
-### Week 3 · November 17–23
-**Focus:** Conversation history and follow-up questions
-
-Activities:
-- Load a bounded number of recent messages.
-- Pass relevant history to the AI service.
-- Implement follow-up query resolution.
-- Keep the original question, history and retrieved evidence distinct.
-- Persist user messages and assistant responses.
-- Test multi-turn conversations and isolated new threads.
-
-**Deliverable:** Conversational RAG flow supporting follow-up questions and history.
-
-### Week 4 · November 24–30
-**Focus:** Improve RAG quality
-
-Activities:
-- Compare retrieval results against Week 1.
-- Inspect missed evidence.
-- Improve the generation prompt.
-- Add source references or page/chunk citations.
-- Test questions requiring multiple chunks.
-- Make one targeted retrieval or chunking improvement.
-- Document the improvement.
-
-**Deliverable:** More reliable RAG with source references and an evaluation report.
-
-## Phase 2 — Agent fundamentals and orchestration
-
-### Week 5 · December 1–7
-**Focus:** LLM tool calling, agent fundamentals and Google ADK basics
-
-Activities:
-- Understand LLM calls versus tool calling.
-- Understand deterministic workflows versus agents.
-- Learn tool schemas and structured outputs.
-- Learn ADK architecture and core abstractions.
-- Understand agents, instructions, models, tools and runners.
-- Build a basic Python ADK agent.
-- Implement one controlled tool invocation.
-- Validate tool inputs and handle failures.
-
-**Deliverable:** Working ADK agent with one controlled document-related tool.
-
-### Week 6 · December 8–14
-**Focus:** ADK workflows, state and routing
-
-Activities:
-- Learn workflow state, branching and conditional routing.
-- Define explicit workflow states and transitions.
-- Explore ADK sequential and parallel workflow patterns.
-- Learn session and state management.
-- Understand agent delegation and sub-agents.
-- Add a second route or tool.
-- Handle missing information and unsupported requests.
-- Record workflow decisions and outputs.
-
-**Deliverable:** Multi-step ADK document workflow with observable decisions.
-
-### Week 7 · December 15–21
-**Focus:** LangGraph fundamentals and framework comparison
-
-Activities:
-- Learn graphs, nodes, edges and shared state.
-- Understand conditional edges.
-- Understand LangGraph versus chains and unconstrained agent loops.
-- Reimplement the Week 6 workflow using LangGraph.
-- Inspect state between nodes.
-- Handle errors and termination conditions.
-- Compare ADK and LangGraph in architecture, state, routing, tools, debugging and execution control.
-
-**Deliverable:** Working LangGraph workflow and documented ADK-versus-LangGraph comparison.
-
-### Week 8 · December 22–28
-**Focus:** Persistence, recovery and human approval
-
-Activities:
-- Learn checkpointing and persisted workflow state.
-- Understand retries, idempotency and partial failures.
-- Add human approval before a consequential action.
-- Resume paused workflows.
-- Verify retries do not duplicate actions.
-- Demonstrate paused, approved and resumed workflows.
-- Understand how ADK supports corresponding capabilities.
-
-**Deliverable:** Recoverable workflow with human-in-the-loop control, implemented using LangGraph as the primary orchestration framework.
-
-## Phase 3 — MCP and full-stack integration
-
-### Week 9 · December 29–January 4
-**Focus:** MCP fundamentals and integration
-
-Activities:
-- Understand MCP clients, servers, tools, resources and prompts.
-- Compare MCP with REST APIs and native function calling.
-- Build a small MCP server around a useful document operation.
-- Validate tool inputs and outputs.
-- Connect an MCP client.
-- Integrate the tool with LangGraph.
-- Handle unavailable tools, timeouts and invalid responses.
-- Enforce permissions outside the model's decision-making.
-
-**Deliverable:** Working MCP integration used by an agentic workflow.
-
-### Week 10 · January 5–11
-**Focus:** React, TypeScript and Next.js
-
-Activities:
-- Practise React components, props, hooks and state.
-- Implement forms and typed API contracts.
-- Handle loading, success, empty and error states.
-- Learn Next.js routing and server/client boundaries.
-- Build an interface for submitting requests and displaying workflow progress.
-- Display retrieved evidence, tool outputs and approval requests.
-- Prevent duplicate submissions.
-
-**Deliverable:** Usable React/Next.js interface for the AI workflow.
-
-### Week 11 · January 12–18
-**Focus:** Full-stack integration and deployment
-
-Activities:
-- Integrate the UI with Express and FastAPI.
-- Define and validate API contracts.
-- Review authentication, authorization and service boundaries.
-- Learn Docker images, containers, ports and environment configuration.
-- Create a reproducible development setup or containerise a service.
-- Add a basic CI check.
-- Document how to run and deploy the application.
-
-**Deliverable:** End-to-end AI feature with reproducible setup and basic CI.
-
-## Phase 4 — Production credibility and portfolio
-
-### Week 12 · January 19–25
-**Focus:** Evaluation, observability and reliability
-
-Activities:
-- Compare the evaluation set against the original baseline.
-- Track workflow outcomes and tool failures.
-- Add structured logs and correlation IDs.
-- Inspect latency and failure points.
-- Add high-value integration tests.
-- Verify authorization boundaries.
-- Update README with architecture, setup, workflow diagrams and limitations.
-- Record a short project demo.
-
-**Deliverable:** AI application with evaluation evidence, observability and documented architecture.
-
-### Week 13 · January 26–February 1
-**Focus:** Interview readiness
-
-Activities:
-- Explain the architecture without notes.
-- Practise RAG, retrieval, tool calling, ADK, LangGraph and MCP questions.
-- Explain state management, recovery, security and design trade-offs.
-- Practise one Python or TypeScript coding exercise.
-- Draft accurate resume bullets based on implemented work.
-- Apply to a focused batch of relevant roles.
-- Record recruiter and interview feedback.
-
-**Deliverable:** Project walkthrough and interview preparation notes.
-
-### Week 14 · February 2–8
-**Focus:** Gap closure and market feedback
-
-Activities:
-- Review recruiter and interview feedback.
-- Identify repeated skill gaps.
-- Improve one meaningful weakness.
-- Rehearse the demo and architecture discussion.
-- Tailor the resume for AI application and full-stack roles.
-- Set the next learning priority based on application feedback.
-
-**Deliverable:** Targeted next-step plan based on market feedback.
-
----
-
-## Weekly time allocation
-
-| Activity | Hours |
-|---|---:|
-| Concepts and framework learning | 1.5 |
-| Implementation and testing | 4.5 |
-| Review and documentation | 1 |
-| **Total** | **7** |
-
-## Working rules
-
-1. One milestone at a time. No jumping ahead while foundational work remains incomplete.
-2. Understand before implementing. Discuss the reasoning and trade-offs before changing code.
-3. Use the existing project wherever practical.
-4. Test deployed behaviour using the existing Vercel and Render deployments.
-5. Measure improvements against the Week 1 evaluation set.
-6. Keep document-grounded answers separate from independent verification.
-7. Do not claim technologies or capabilities on the resume before implementation evidence exists.
-8. Learn ADK and LangGraph comparatively, without unnecessarily introducing both into the same production execution path.
-9. Keep security, authorization and tool validation outside the LLM's authority.
-
-**Primary outcome:** A demonstrable full-stack AI application with reliable RAG, conversational memory, controlled agent workflows, LangGraph orchestration, MCP integration, evaluation and production-oriented engineering practices.
-
-
-
-Day 1 — November 12: Finish Week 2
-Models, repositories and smoke tests complete
-Goal: A user can create multiple conversations for a document, retrieve them, and access only their own conversations.
-Time	Task	Expected outcome
-1 hr	Document ownership and thread service	Service validates document ownership and READY status
-1 hr	Message service	Verify thread ownership before message operations
-1 hr	Thread/message controllers and routes	API endpoints working
-1 hr	API testing	Test authorized and unauthorized requests
-1–2 hrs	Frontend integration	Create/list conversations and load messages
-
-Endpoints to target:
-POST   /documents/:documentId/threads
-GET    /documents/:documentId/threads
-GET    /threads/:threadId/messages
-DELETE /threads/:threadId
-
-
-We can add a message endpoint when we connect Week 3.
-
-Definition of done:
-- Multiple threads per document.
-- Thread ownership enforced.
-- Messages retrieved in chronological order.
-- Thread deletion removes associated messages.
-- Basic frontend conversation selection.
-Don't spend time redesigning the UI. Functional is enough.
-Day 2 — November 13: Finish Week 3
-Goal: Convert the existing single-question RAG implementation into a conversational RAG system.
-
-This is a particularly important step because it introduces the distinction between conversation state and retrieval context.
-Time	Task	Expected outcome
-1 hr	Understand conversation context	Original question vs latest question vs conversation history
-1.5 hrs	Persist messages	User and assistant messages saved
-1 hr	Fetch recent history	Bounded history passed to AI service
-1 hr	Follow-up query handling	Resolve references such as "What about the second point?"
-1–1.5 hrs	Testing	Multi-turn conversations tested end to end
-
-The conceptual request flow should become:
-User question
-
-Express API
-
-Authenticate user · Validate thread ownership
-
-Load conversation history
-
-Recent messages · Current question
-
-FastAPI RAG service
-
-Query resolution · Embedding · Retrieval · Generation
-
-Persist assistant response and evidence
-
-
-Important concepts to understand:
-- Conversation history is not the same as retrieved document context.
-- The latest question may depend on previous messages.
-- We should not send unlimited history to the LLM.
-- The original question, resolved question, conversation history, and retrieved evidence should remain distinguishable.
-Definition of done: You can ask a question, ask a follow-up, refresh the application, reopen the thread, and continue the conversation.
-Day 3 — November 14: Week 4 + Week 5
-This is our most conceptually dense day.
-Part A — Week 4: RAG quality (1.5–2 hours)
-We will deliberately reduce the scope of this week.
-
-Do only:
-- Attach source metadata to retrieved chunks.
-- Return chunk references/evidence with generated responses.
-- Make the LLM distinguish supported answers from unsupported claims.
-- Run a small evaluation set against the existing baseline.
-Defer:
-- Structured PDF extraction.
-- Advanced chunking.
-- Large-scale evaluation.
-- Sophisticated reranking.
-These can be revisited later without blocking agent development.
-Part B — Week 5: Agent fundamentals and Google ADK (4–4.5 hours)
-We need to understand what makes an agent different from a normal LLM call.
-
-Cover these concepts:
-1. LLM with tools versus an agent.
-2. Tool definitions and input schemas.
-3. Tool selection and execution.
-4. Tool responses and subsequent reasoning.
-5. Agent instructions and constraints.
-6. Controlled tool access and failure handling.
-Then build a small Python Google ADK agent.
-Our first agent
-Document Assistant Agent
-
-Search document
-
-Controlled search tool
-
-
-Get document details
-
-Controlled metadata tool
-
-
-
-Generate a grounded response
-
-
-Use Python ADK and a small, controlled document tool. We do not need to migrate the existing application to ADK.
-
-Definition of done: An ADK agent can receive a question, decide to call a document tool, use its result, and produce an answer.
-Day 4 — November 15: Week 6 — Agent workflows
-Goal: Move from a single tool-using agent to a workflow involving multiple steps and state.
-
-Concepts to cover:
-Concept	What you should understand
-Agent state	Information retained across workflow steps
-Sequential workflow	Steps executed in a defined order
-Routing	Select a path based on the input
-Parallel execution	Independent tasks executed concurrently
-Delegation	A parent agent delegates work to another agent
-Session state	State maintained across interactions
-
-Build this workflow:
-User request
-
-Request classification
-
-Document Q&A
-
-Search document → Answer
-
-
-Document summary
-
-Retrieve content → Summarize
-
-
-
-Final response
-
-
-Implement using ADK workflow primitives. Try sequential execution and routing first. If time permits, add a second agent to handle a specialized task.
-
-Definition of done:
-- Workflow has multiple steps.
-- It maintains state.
-- It routes requests to different execution paths.
-- You can explain how it differs from a single LLM call and a single tool-using agent.
-
-What we are deliberately postponing
-To protect the four-day target, these are not sprint blockers:
-Topic	Decision
-Advanced PDF extraction and chunking	Postpone
-RAG reranking and advanced retrieval	Postpone
-Streaming responses	Postpone
-Advanced ADK delegation	Optional
-LangGraph implementation	Next phase, Week 7
-MCP implementation	Week 9
-Production observability	Later phase
-
-We are not abandoning these topics. We are moving them out of the critical path.
-Rules for the sprint
-I want to establish a few rules so that we actually get through this.
-1. Time-box problems. If something takes more than 30 minutes to debug, isolate it and move on if it isn't blocking the next deliverable.
-2. No unnecessary refactoring. Existing architecture stays as it is unless something genuinely prevents progress.
-3. One working implementation per major concept. We don't need production-grade implementations of every pattern.
-4. Understand before implementing. We'll still discuss design decisions, but keep explanations focused on the current task.
-5. Every day ends with a working checkpoint. Commit the code and record what you learned.
-Sprint tracker
-Execution progress
-0/20
-
-
-
-Nov 12 · Week 2 — Persistent conversations
-[ ] Thread and message services
-[ ] Ownership and document status validation
-[ ] API routes and controllers
-[ ] Thread deletion with message cleanup
-[ ] Basic frontend integration
-
-
-Nov 13 · Week 3 — Multi-turn RAG
-[ ] Persist user and assistant messages
-[ ] Load bounded conversation history
-[ ] Resolve follow-up questions
-[ ] Pass history to FastAPI
-[ ] Test multi-turn conversation after refresh
-
-
-Nov 14 · Weeks 4–5 — Grounding and ADK
-[ ] Basic source attribution and evaluation
-[ ] Understand agent/tool-calling loop
-[ ] Learn ADK agent and tool definitions
-[ ] Build controlled document search tool
-[ ] Run a working ADK agent
-
-
-Nov 15 · Week 6 — Stateful workflows
-[ ] Understand agent state and sessions
-[ ] Build sequential workflow
-[ ] Build request routing
-[ ] Test multiple execution paths
-[ ] Document ADK concepts and implementation
-
-
-
-Let's start today
-You have already completed the Week 2 models, repositories, indexes, and repository tests. We should not revisit those.
-
-Our first task today is the service layer.
-
-Share your current:
-- Document repository.
-- Thread/message service files, if already created.
-- Existing document controller/service structure.
-We'll inspect the actual code, agree on the service responsibilities, and implement the first piece. No rewriting the architecture.
-
-One final point: I am treating November 15 as the deadline for breadth and working prototypes, not production completeness. By the end of Sunday, you should have touched persistent conversational RAG, Google ADK, tool calling, state, and workflow orchestration. That's the outcome worth optimizing for.
+Weekly time allocation
+Target 6.5 hours per week, with flexibility between 6 and 7 hours.
+
+  Activity                                                 Target
+  Concepts, reading and architecture discussion         1.5 hours
+Implementation and testing                              4 hours
+Review, debugging notes and documentation                1 hour
+Total                                         6.5 hours
+
+A practical weekly rhythm is three sessions of roughly 2 hours plus a
+short 30-minute review, or two longer sessions and one shorter session.
+The exact days can change; protect the weekly total.
+Parallel track — Job-market validation (runs every week)
+This is not a separate phase and does not wait until the learning roadmap is complete. It runs alongside every technical milestone so the learning priorities stay connected to actual hiring demand.
+
+**Weekly time budget: 30–45 minutes, included within your overall 6–7 hour weekly commitment. This is a lightweight research loop, not a daily application quota.
+Weekly market-validation routine
+1. Scan roles (10–15 minutes): review a small, relevant sample of AI Engineer, AI Application Engineer, AI Platform Engineer and Full-Stack AI Engineer roles across job portals and startup career pages. Include remote/international roles when relevant to the search.
+2. Extract recurring requirements (10–15 minutes): note repeated technologies, experience expectations, deployment skills, evaluation/observability expectations and responsibilities. Separate frequent requirements from one-off wishlist items.
+3. Compare against evidence (5–10 minutes): classify each recurring requirement as demonstrated in the project, known but not demonstrated, currently learning, or a genuine gap.
+4. Choose one action (5 minutes): decide whether to keep the roadmap unchanged, adjust emphasis, create a small proof-of-skill task, or apply to a suitable role.
+Keep a lightweight job-market tracker
+For each useful job description, record:
+- Role title, company, location/remote status and link.
+- Required skills versus preferred skills.
+- Repeated responsibilities and expected ownership level.
+- Relevant gaps or evidence already available in the project.
+- Whether to apply, save for later, or ignore (with a short reason).
+Do not try to analyse every job description. A small, consistent sample of relevant roles is more useful than a large pile of unfiltered listings.
+Monthly decision gate
+At the end of every four weeks, review the accumulated job descriptions and any recruiter/interview feedback. Ask:
+- Which skills appear repeatedly across credible target roles?
+- Which of those skills are missing from the roadmap or not yet demonstrated?
+- Are we spending too much time on a framework or topic that rarely appears in target roles?
+- Are there repeated requirements that should move earlier?
+- Are applications producing responses, screening calls or technical interviews? If not, is the likely issue role targeting, resume evidence, seniority fit or a demonstrable skill gap?
+Make at most one or two meaningful roadmap changes at each review. Do not pivot because of one unusual job description or one rejection. Look for patterns across multiple roles and feedback points.
+Pivot rules
+- Keep the roadmap: when the current topics align with repeated requirements and there is no strong contrary evidence.
+- Adjust emphasis: when a skill already on the roadmap appears frequently; give it more implementation depth without necessarily adding another week.
+- Move a topic earlier: when multiple relevant job descriptions repeatedly require it and it is a prerequisite for roles being targeted.
+- Defer a topic: when it has low demand in the target role sample and is not a prerequisite for the project's core outcome.
+- Change target roles or positioning: only after reviewing a meaningful sample of job descriptions and application outcomes, not based on a single rejection.
+The roadmap is therefore a hypothesis that is tested against the market every week, not a fixed syllabus that must be completed unchanged.
+Working rules
+1. One milestone at a time. Do not jump ahead because a framework
+   feature looks interesting.
+2. Understand the protocol/framework concept before implementing it.
+3. Use the existing project wherever practical; create small isolated
+   prototypes only when they help explain a concept.
+4. Keep tool execution deterministic and validated in application code.
+5. Enforce authentication, ownership and authorization outside the
+   model's decision-making.
+6. Test deployed behaviour using the existing Vercel and Render
+   deployments when the feature is integrated.
+7. Compare RAG improvements against the original evaluation set.
+8. Do not put ADK and LangGraph into the same production execution path
+   merely to use both. Learn and compare them; choose deliberately.
+9. Keep document-grounded answers separate from independent
+   verification.
+10. Update the resume only after there is working implementation
+    evidence.
+What is intentionally deferred
+To protect the 6--7 hour weekly commitment, these are not immediate
+blockers: - Advanced PDF extraction and layout-aware parsing -
+Sophisticated chunking and reranking - Large-scale evaluation datasets -
+Streaming responses - Multiple cooperating agents beyond the core
+workflow - Production-grade deployment infrastructure - Advanced
+observability platforms
+
+Revisit these only when a measured limitation or project requirement
+justifies the effort.
+Primary outcome
+A demonstrable full-stack AI application that shows: - Reliable document
+ingestion and RAG - Persistent, multi-turn conversations - LLM tool
+calling with validation and failure handling - An MCP server/client
+integration - Practical Google ADK agent and workflow experience -
+LangGraph fundamentals and an informed framework comparison - A
+controlled agentic RAG workflow - Evaluation, observability,
+authorization and production-oriented engineering practices
+
+The objective is not to collect framework names. It is to be able to
+explain, implement, test and defend the architecture and its trade-offs.
